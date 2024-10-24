@@ -1,6 +1,5 @@
 import type { Config } from "tailwindcss";
 import animatePlugin from "tailwindcss-animate";
-
 const config: Config = {
   darkMode: ["class"],
   content: [
@@ -85,6 +84,9 @@ const config: Config = {
           shade: {
             light: "#F1F0F0",
             dark: "#050418",
+          },
+          background: {
+            700: "#DBEFFC",
           },
           feedback: {
             success: "#22C55E",
