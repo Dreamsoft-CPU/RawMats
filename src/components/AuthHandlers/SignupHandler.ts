@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { createClient } from "@/utils/supabase/server";
+import prisma from "@/utils/prisma/client";
+import { parseAuthError } from "./AuthErrorHandler";
 
 const SignupSchema = z
   .object({
@@ -47,7 +49,7 @@ export async function signup(formData: FormData) {
 
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signUp({
+    const { error, data } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -58,20 +60,51 @@ export async function signup(formData: FormData) {
       },
     });
 
-    if (error) {
-      console.log(error);
-      redirect(`/error?message=${encodeURIComponent(error.message)}`);
+    if (data.user) {
+      const { user } = data;
+      const uniqueUser = await prisma.user.findUnique({
+        where: {
+          id: user.id,
+        },
+      });
+
+      if (!uniqueUser) {
+        console.log("First time login");
+        let email: string = "no-email";
+        let display_name: string = "no-name";
+
+        if (user.email) {
+          email = user.email;
+        }
+
+        if (user.user_metadata.display_name) {
+          display_name = user.user_metadata.display_name;
+        }
+
+        await prisma.user.create({
+          data: {
+            id: user.id,
+            email: email,
+            displayName: display_name,
+          },
+        });
+      }
     }
 
-    redirect(
-      `/done?header=${encodeURIComponent("Email confirmation sent")}&message=${encodeURIComponent("Check your email to proceed!")}`,
-    );
+    console.log(data);
+
+    if (error) {
+      return parseAuthError(error);
+    }
+
+    return { error: null };
   } catch (error) {
     if (error instanceof Error) {
-      console.log(error);
       redirect(`/error?message=${encodeURIComponent(error.message)}`);
     } else {
-      redirect("/error?message=An unexpected error occurred");
+      redirect(
+        `/error?message=${encodeURIComponent("An unexpected error occurred")}`,
+      );
     }
   }
 }

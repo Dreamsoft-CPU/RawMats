@@ -15,20 +15,21 @@ const LoginSchema = z.object({
 
 export async function login(formData: FormData) {
   try {
-    const result = LoginSchema.safeParse({
+    const parseResult = LoginSchema.safeParse({
       email: formData.get("email"),
       password: formData.get("password"),
     });
 
-    if (!result.success) {
-      const errorMessage = result.error.issues
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues
         .map((issue) => issue.message)
         .join(", ");
       throw new Error(errorMessage);
     }
 
-    const { email, password } = result.data;
+    const { email, password } = parseResult.data;
 
+    // Logs in the user
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,

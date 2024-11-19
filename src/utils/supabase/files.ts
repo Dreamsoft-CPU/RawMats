@@ -10,7 +10,9 @@ const supabase = createClient(
 export async function uploadFile(file: File, user: User) {
   const { data, error } = await supabase.storage
     .from("photos")
-    .upload(`business-docs/${user.id}_${file.name}`, file);
+    .upload(`business-docs/${user.id}/${file.name}`, file, {
+      contentType: "image/*",
+    });
   if (error) {
     // Handle error
     console.error(error);
@@ -20,20 +22,38 @@ export async function uploadFile(file: File, user: User) {
   }
 }
 
-// export async function retrieveFile() {
-//   const { data, error } = await supabase
-//     .storage
-//     .from("photos")
-//     .list("business-docs", {
-//       offset: 0,
-//       sortBy: { column: 'name', order: 'asc' },
-//     })
+export async function retrieveFile(userID: string) {
+  const { data, error } = await supabase.storage
+    .from("photos")
+    .list(`business-docs/${userID}`, {
+      offset: 0,
+      sortBy: { column: "name", order: "asc" },
+    });
 
-//   if (error) {
-//     // Handle error
-//     console.error(error);
-//   } else {
-//     // Handle success
-//     return data;
-//   }
-// }
+  if (error) {
+    // Handle error
+    console.error(error);
+    return null;
+  } else {
+    // Handle success
+    const downloadedFiles = await Promise.all(
+      data.map(async (file) => {
+        const { data, error } = await supabase.storage
+          .from("photos")
+          .createSignedUrl(`business-docs/useridstring/${file.name}`, 3600);
+        if (error) {
+          console.error(error);
+          return null;
+        } else {
+          return data.signedUrl;
+        }
+      }),
+    );
+
+    if (downloadedFiles.every((file) => file === null)) {
+      return null;
+    } else {
+      return downloadedFiles;
+    }
+  }
+}

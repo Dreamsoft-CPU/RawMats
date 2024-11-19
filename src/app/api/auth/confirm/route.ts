@@ -17,12 +17,11 @@ export const GET = async (request: NextRequest) => {
       token_hash,
     });
     if (!error) {
-      // redirect user to specified redirect URL or root of app
       if (type === "recovery") {
         redirect("/recover/update");
       } else if (type === "signup" || type == "email") {
         redirect(
-          "/done?header=Email_confirmed&message=Your_email_has_been_confirmed&type=email",
+          `"/done?header=${encodeURIComponent("Email confirmed")}&message=${encodeURIComponent("Your email is now confirmed, log in again!")}&type=email"`,
         );
       }
     }

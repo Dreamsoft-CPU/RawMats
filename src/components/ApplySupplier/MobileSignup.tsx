@@ -1,4 +1,4 @@
-import SignupForm from "@/components/apply-supplier/SignupForm";
+import SupplierForm from "@/components/ApplySupplier/SupplierForm";
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 
@@ -24,7 +24,7 @@ export default function MobileSignup({
           Your trusted partner in business registration!
         </p>
         <div className="">
-          <SignupForm apiKey={apiKey} mapId={mapId} user={user} />
+          <SupplierForm apiKey={apiKey} mapId={mapId} user={user} />
         </div>
       </div>
     </div>

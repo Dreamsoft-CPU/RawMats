@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { signup } from "../AuthHandlers/SignupHandler";
 import { SignupFormData } from "@/types/types";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import InlineLoading from "../Loading/InlineLoading";
 
 const schema = z
   .object({
@@ -42,17 +45,42 @@ export default function SignUpForm() {
     resolver: zodResolver(schema),
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
   const onSubmit = async (data: SignupFormData) => {
+    setIsLoading(true);
     try {
       const payload = new FormData();
       Object.entries(data).forEach(([key, value]) =>
         payload.append(key, value),
       );
 
-      await signup(payload);
-      console.log("Signup successful", data);
+      const result = await signup(payload);
+
+      if (result.error) {
+        setError(result.error);
+        setTimeout(() => {
+          setError(null);
+        }, 5000);
+      } else {
+        router.push(
+          `/done?header=${encodeURIComponent("Email confirmation sent")}&message=${encodeURIComponent("Check your inbox for a confirmation link")}&type=email`,
+        );
+      }
     } catch (error) {
-      console.error("Signup failed:", error);
+      if (error instanceof Error) {
+        router.push(
+          `/error?message=${encodeURIComponent(error.message)}&code=${encodeURIComponent("500")}`,
+        );
+      } else {
+        router.push(
+          `/error?message=${encodeURIComponent("An unexpected error occurred")}&code=${encodeURIComponent("500")}`,
+        );
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -167,6 +195,12 @@ export default function SignUpForm() {
           )}
         </div>
 
+        {error ? (
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 text-rawmats-feedback-error">{error}</span>
+          </div>
+        ) : null}
+
         <div className="justify-between flex flex-row mt-2 md:mt-0 md:flex-row items-center">
           <Link
             className="text-rawmats-primary-700 text-xs font-medium italic hover:text-rawmats-primary-300 lg:text-sm"
@@ -177,9 +211,10 @@ export default function SignUpForm() {
           <div className="flex items-center mt-4">
             <Button
               type="submit"
-              className="px-6 py-2 mb-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
+              disabled={isLoading}
+              className="px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
             >
-              Create Account
+              {isLoading ? <InlineLoading message="Signing up" /> : "Sign Up"}
             </Button>
           </div>
         </div>

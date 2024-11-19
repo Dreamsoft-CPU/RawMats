@@ -14,14 +14,16 @@ datasource db {
 }
 
 model User {
-  id          String     @id @default(cuid())
-  email       String     @unique
-  displayName String
-  role        Role       @default(USER)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  supplier    Supplier? // Optional because not every user is a supplier
-  favorites   Favorite[] // One user can have many favorites
+  id             String     @id @default(cuid())
+  email          String     @unique
+  displayName    String
+  profilePicture String     @default("/users/default.jpg")
+  phoneNumber    String     @default("None")
+  role           Role       @default(USER)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  supplier       Supplier? // Optional because not every user is a supplier
+  favorites      Favorite[] // One user can have many favorites
 }
 
 enum Role {
@@ -30,21 +32,24 @@ enum Role {
 }
 
 model Supplier {
-  id                String    @id @default(cuid())
-  userId            String    @unique // One-to-one with User
-  user              User      @relation(fields: [userId], references: [id])
-  businessName      String    @unique
-  businessLocation  String
-  businessDocuments String
-  verified          Boolean   @default(false)
-  verifiedDate      DateTime  @updatedAt
-  products          Product[]
+  id               String    @id @default(cuid())
+  userId           String    @unique // One-to-one with User
+  user             User      @relation(fields: [userId], references: [id])
+  businessPicture  String    @default("/businesses/default.jpg")
+  businessName     String    @unique
+  businessLocation String
+  businessPhone    String    @default("None")
+  bio              String    @default("None")
+  verified         Boolean   @default(false)
+  verifiedDate     DateTime  @updatedAt
+  products         Product[]
 }
 
 model Product {
   id           String     @id @default(cuid())
   name         String
   description  String
+  image        String     @default("/products/default.jpg")
   price        Float
   supplierId   String
   dateAdded    DateTime   @default(now())
