@@ -1,4 +1,4 @@
-import { ApplicationFormData } from "@/components/apply-supplier/SupplierForm";
+import { ApplicationFormData } from "@/components/ApplySupplier/SupplierForm";
 import prisma from "@/utils/prisma/client";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";

@@ -1,5 +1,5 @@
 import React from "react";
-import SupplierForm from "@/components/apply-supplier/SupplierForm";
+import SupplierForm from "@/components/ApplySupplier/SupplierForm";
 import Image from "next/image";
 import { User } from "@supabase/supabase-js";
 

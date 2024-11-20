@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import prisma from "@/utils/prisma/client";
 
 const DesktopSignup = dynamic(
-  () => import("@/components/apply-supplier/DesktopSignup"),
+  () => import("@/components/ApplySupplier/DesktopSignup"),
   {
     loading: () => <p>Loading desktop signup...</p>,
     ssr: true,
@@ -13,7 +13,7 @@ const DesktopSignup = dynamic(
 );
 
 const MobileSignup = dynamic(
-  () => import("@/components/apply-supplier/MobileSignup"),
+  () => import("@/components/ApplySupplier/MobileSignup"),
   {
     loading: () => <p>Loading mobile signup...</p>,
     ssr: true,

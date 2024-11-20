@@ -86,7 +86,7 @@ export default function SupplyForm({
 
       const result: { success: boolean } = await response.json();
 
-      if (result.success) {
+      if (!result.success) {
         setError("An error occurred while submitting your application");
         setTimeout(() => {
           setError(null);
@@ -233,7 +233,7 @@ export default function SupplyForm({
           <Button
             type="submit"
             disabled={isLoading}
-            className="mt-1 p-5 w-[45%] px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
+            className="px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
           >
             {isLoading ? <InlineLoading message="Signing up" /> : "Sign Up"}
           </Button>

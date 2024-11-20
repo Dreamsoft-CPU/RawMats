@@ -1,4 +1,4 @@
-import SupplierForm from "@/components/apply-supplier/SupplierForm";
+import SupplierForm from "@/components/ApplySupplier/SupplierForm";
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 

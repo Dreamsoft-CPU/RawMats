@@ -40,20 +40,17 @@ export async function retrieveFile(userID: string) {
       data.map(async (file) => {
         const { data, error } = await supabase.storage
           .from("photos")
-          .createSignedUrl(`business-docs/useridstring/${file.name}`, 3600);
+          .download(`business-docs/${userID}/${file.name}`);
         if (error) {
           console.error(error);
           return null;
         } else {
-          return data.signedUrl;
+          const imageURL = URL.createObjectURL(data);
+          return imageURL;
         }
       }),
     );
 
-    if (downloadedFiles.every((file) => file === null)) {
-      return null;
-    } else {
-      return downloadedFiles;
-    }
+    return downloadedFiles;
   }
 }
