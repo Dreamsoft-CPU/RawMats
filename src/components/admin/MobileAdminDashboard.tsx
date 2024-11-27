@@ -1,15 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Package, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import logo from "../../public/logo.png";
-import { useState } from "react";
 import { Product, Supplier, User } from "@prisma/client";
-import { ItemVerification } from "@/components/admin/ItemVerification";
+import { ItemVerification } from "@/components/Admin/ItemVerification";
 import { SupplierVerification } from "./SupplierVerification";
 
 const MobileAdminDashboard = ({
@@ -19,7 +19,7 @@ const MobileAdminDashboard = ({
   fetchedProducts: Product[];
   fetchedSuppliers: (Supplier & { user: User })[];
 }) => {
-  const [selectedTab, setSelectedTab] = useState("supplier");
+  const [selectedTab, setSelectedTab] = useState("item");
 
   const handleVerify = async (id: string) => {
     try {
@@ -90,16 +90,21 @@ const MobileAdminDashboard = ({
               className="flex-1"
             >
               <TabsList className="flex flex-col w-full h-auto">
-                <TabsTrigger value="supplier" className="justify-start mb-2">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Suplier Verification
-                </TabsTrigger>
-                <TabsTrigger value="item" className="justify-start">
+                <TabsTrigger value="item" className="justify-start mb-2">
                   <Package className="mr-2 h-4 w-4" />
                   Item Verification
                 </TabsTrigger>
+                <TabsTrigger value="supplier" className="justify-start">
+                  <Mail className="mr-2 h-4 w-4" />
+                  Supplier Verification
+                </TabsTrigger>
               </TabsList>
             </Tabs>
+            <div className="p-4 border-t">
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/">Go to Home</Link>
+              </Button>
+            </div>
           </SheetContent>
         </Sheet>
       </header>
@@ -110,13 +115,6 @@ const MobileAdminDashboard = ({
           onValueChange={setSelectedTab}
           className="w-full"
         >
-          <TabsContent value="supplier">
-            <h2 className="text-2xl font-bold mb-4">Supplier Verification</h2>
-            {fetchedSuppliers.length === 0 && (
-              <p>No supplier applications currently</p>
-            )}
-            <SupplierVerification suppliers={fetchedSuppliers} />
-          </TabsContent>
           <TabsContent value="item">
             <h2 className="text-2xl font-bold mb-4">Item Verification</h2>
             <ItemVerification
@@ -124,6 +122,13 @@ const MobileAdminDashboard = ({
               verifyProduct={handleVerify}
               rejectProduct={handleReject}
             />
+          </TabsContent>
+          <TabsContent value="supplier">
+            <h2 className="text-2xl font-bold mb-4">Supplier Verification</h2>
+            {fetchedSuppliers.length === 0 && (
+              <p>No supplier applications currently</p>
+            )}
+            <SupplierVerification suppliers={fetchedSuppliers} />
           </TabsContent>
         </Tabs>
       </main>

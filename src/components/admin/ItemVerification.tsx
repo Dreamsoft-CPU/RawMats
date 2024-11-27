@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,59 +82,74 @@ export function ItemVerification({
       <ScrollArea className="h-[calc(100vh-12rem)]">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
           {products.map((product) => (
-            <Card key={product.id} className="flex flex-col">
-              <div className="relative w-full pt-[50%]">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-t-lg"
-                />
-              </div>
-              <CardHeader>
-                <CardTitle className="text-lg">{product.name}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {product.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="font-semibold">
-                  Price: ${product.price.toFixed(2)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Supplier ID: {product.supplierId}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Date Added: {new Date(product.dateAdded).toLocaleDateString()}
-                </p>
-                {product.verified && (
-                  <p className="text-sm text-muted-foreground">
-                    Verified Date:{" "}
-                    {new Date(product.verifiedDate).toLocaleDateString()}
+            <Link
+              href={`/product/${product.id}`}
+              key={product.id}
+              className="block"
+            >
+              <Card className="flex flex-col h-full transition-transform hover:scale-105">
+                <div className="relative w-full pt-[50%]">
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-t-lg"
+                  />
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-lg">{product.name}</CardTitle>
+                  <CardDescription className="line-clamp-2">
+                    {product.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="font-semibold">
+                    Price: ${product.price.toFixed(2)}
                   </p>
-                )}
-              </CardContent>
-              <CardFooter className="flex gap-2 justify-between">
-                <Button
-                  onClick={() => verifyProduct(product.id)}
-                  disabled={product.verified}
-                  className="flex-1 bg-rawmats-primary-300 hover:bg-rawmats-feedback-success hover:text-rawmats-text-500 "
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  Verify
-                </Button>
-                <Button
-                  onClick={() => openRejectModal(product.id)}
-                  variant="destructive"
-                  disabled={product.verified}
-                  className="flex-1 bg-rawmats-feedback-error hover:bg-red-600"
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Reject
-                </Button>
-              </CardFooter>
-            </Card>
+                  <p className="text-sm text-muted-foreground">
+                    Supplier ID: {product.supplierId}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Date Added:{" "}
+                    {new Date(product.dateAdded).toLocaleDateString()}
+                  </p>
+                  {product.verified && (
+                    <p className="text-sm text-muted-foreground">
+                      Verified Date:{" "}
+                      {new Date(product.verifiedDate).toLocaleDateString()}
+                    </p>
+                  )}
+                </CardContent>
+                <CardFooter className="flex gap-2 justify-between">
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      verifyProduct(product.id);
+                    }}
+                    disabled={product.verified}
+                    className="flex-1 bg-rawmats-primary-300 hover:bg-rawmats-feedback-success hover:text-rawmats-text-500"
+                  >
+                    <Check className="mr-2 h-4 w-4" />
+                    Verify
+                  </Button>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openRejectModal(product.id);
+                    }}
+                    variant="destructive"
+                    disabled={product.verified}
+                    className="flex-1 bg-rawmats-feedback-error hover:bg-red-600"
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Reject
+                  </Button>
+                </CardFooter>
+              </Card>
+            </Link>
           ))}
         </div>
       </ScrollArea>

@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
 const DesktopAdminDashboard = dynamic(
-  () => import("@/components/admin/DesktopAdminDashboard"),
+  () => import("@/components/Admin/DesktopAdminDashboard"),
   {
     loading: () => <p>Loading desktop admin dashboard...</p>,
     ssr: true,
@@ -14,7 +14,7 @@ const DesktopAdminDashboard = dynamic(
 );
 
 const MobileAdminDashboard = dynamic(
-  () => import("@/components/admin/MobileAdminDashboard"),
+  () => import("@/components/Admin/MobileAdminDashboard"),
   {
     loading: () => <p>Loading mobile admin dashboard...</p>,
     ssr: true,
