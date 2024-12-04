@@ -1,80 +1,80 @@
-"use client";
+import React, { useState } from "react";
+import Image from "next/image";
+import { Product } from "@/types/types";
 
-import { useState, useEffect } from "react";
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  verified: boolean;
-}
-
-const ManageListings = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("/api/product");
-        if (!response.ok) {
-          throw new Error("Failed to fetch products");
-        }
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
+const ManageListings = ({
+  fetchedProducts,
+}: {
+  fetchedProducts: Product[];
+}) => {
+  const [products, setProducts] = useState<Product[]>(fetchedProducts);
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/product/${id}`, { method: "DELETE" });
+      const response = await fetch(`/api/product`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
       if (!response.ok) {
         throw new Error("Failed to delete product");
       }
+
       setProducts(products.filter((product) => product.id !== id));
+      alert("Product deleted successfully!");
     } catch (error) {
       console.error("Error deleting product:", error);
+      alert("Failed to delete product.");
     }
   };
 
-  if (loading) {
-    return <p>Loading products...</p>;
-  }
-
   return (
-    <div>
+    <div className="mt-6">
       {products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-center">
           {products.map((product) => (
             <div
               key={product.id}
-              className="border p-4 rounded-lg shadow-md flex flex-col space-y-2"
+              className="max-w-[250px] border rounded-lg shadow-xl overflow-hidden bg-[#F2F8FC] hover:shadow-2xl transition-shadow duration-300"
             >
-              <h2 className="text-lg font-semibold">{product.name}</h2>
-              <p className="text-gray-600">Price: ${product.price}</p>
-              <p className="text-gray-800">{product.description}</p>
-              <p>
-                Status: {product.verified ? "Verified" : "Pending Verification"}
-              </p>
-              <button
-                onClick={() => handleDelete(product.id)}
-                className="mt-2 bg-red-500 text-white py-1 px-4 rounded"
-              >
-                Delete
-              </button>
+              {product.image && (
+                <div className="relative w-full h-40">
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    className="rounded-t-lg"
+                    loading="lazy"
+                    quality={75}
+                  />
+                </div>
+              )}
+              <div className="p-4 flex flex-col items-center">
+                <h3 className="text-base font-semibold text-gray-800">
+                  {product.name}
+                </h3>
+                <p className="text-gray-600 mt-2 text-sm text-center">
+                  {product.description}
+                </p>
+                <p className="text-green-500 mt-4 text-lg font-semibold">
+                  ${product.price.toFixed(2)}
+                </p>
+                <button
+                  onClick={() => handleDelete(product.id)}
+                  className="mt-4 bg-red-200 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-opacity-50 rounded-xl py-1 px-4 transition-all duration-300"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
       ) : (
-        <p>No listings available.</p>
+        <p className="text-center text-gray-500">No products created yet.</p>
       )}
     </div>
   );

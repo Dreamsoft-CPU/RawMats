@@ -1,5 +1,4 @@
-import Image from 'next/image';
-// import Image from 'next/image';
+import Image from "next/image";
 
 interface ProductListProps {
   products: {
@@ -17,40 +16,43 @@ interface ProductListProps {
 
 export default function ProductList({ products }: ProductListProps) {
   return (
-    <div className="mt-6">
-      <h2 className="text-xl font-semibold mb-4">Created Products</h2>
+    <div className="mt-6 justify-center">
       {products.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-center">
           {products.map((product) => (
             <div
               key={product.id}
-              className="border rounded-lg shadow-md p-4 flex flex-col items-center"
+              className="max-w-[250px] border rounded-lg shadow-xl overflow-hidden bg-[#F2F8FC] hover:shadow-1xl transition-shadow duration-300"
             >
               {product.image && (
-                <div className="w-32 h-32 overflow-hidden rounded-md mb-4">
+                <div className="relative w-full h-40">
                   <Image
                     src={product.image}
                     alt={product.name}
-                    width={128}
-                    height={128}
-                    className="object-cover"
+                    fill
+                    style={{ objectFit: "cover" }}
+                    className="rounded-t-lg"
                     loading="lazy"
-                    quality={75} // Optional: Set image quality to balance performance and clarity
+                    quality={75}
                   />
                 </div>
               )}
-              <h3 className="text-lg font-semibold">{product.name}</h3>
-              <p className="text-gray-600 mt-2 text-sm">
-                {product.description}
-              </p>
-              <p className="text-green-500 mt-2 font-semibold">
-                ${product.price.toFixed(2)}
-              </p>
+              <div className="p-4 flex flex-col items-center">
+                <h3 className="text-base font-semibold text-gray-800">
+                  {product.name}
+                </h3>
+                <p className="text-gray-600 mt-2 text-sm text-center">
+                  {product.description}
+                </p>
+                <p className="text-green-500 mt-4 text-lg font-semibold">
+                  ${product.price.toFixed(2)}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       ) : (
-        <p>No products created yet.</p>
+        <p className="text-center text-gray-500">No products created yet.</p>
       )}
     </div>
   );
