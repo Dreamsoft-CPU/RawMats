@@ -141,10 +141,11 @@ export function SupplierVerification({
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex gap-4">
+          <CardFooter className="flex gap-4 justify-center">
             <Button
               onClick={() => verifySupplier(supplier.userId)}
               disabled={supplier.verified || isLoading.status}
+              className="flex-1 bg-rawmats-primary-300 hover:bg-rawmats-feedback-success hover:text-rawmats-text-500 max-w-[25%]"
             >
               {isLoading.method === "verify" ? (
                 <InlineLoading message="Verifying" />
@@ -159,6 +160,7 @@ export function SupplierVerification({
               onClick={() => rejectSupplier(supplier.userId)}
               variant="destructive"
               disabled={supplier.verified || isLoading.status}
+              className="flex-1 bg-rawmats-feedback-error hover:bg-red-600 max-w-[25%]"
             >
               {isLoading.method === "reject" ? (
                 <InlineLoading message="Rejecting" />
