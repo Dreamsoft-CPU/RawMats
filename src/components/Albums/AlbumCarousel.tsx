@@ -2,12 +2,21 @@
 
 import React from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import ProductPreviewCard from "./ProductPreviewCard";
-import { Products } from "@/utils/Products";
+import AlbumPreviewCard from "./AlbumPreviewCard";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 
-const ProductCarousel: React.FC<Products> = ({ products, userId }) => {
+interface Album {
+  id: string;
+  name: string;
+  favorites: Array<{ product: { id: string; name: string } }>;
+}
+
+interface AlbumCarouselProps {
+  albums: Album[];
+}
+
+const AlbumCarousel: React.FC<AlbumCarouselProps> = ({ albums }) => {
   const [sliderRef] = useKeenSlider({
     slides: {
       perView: 1.2,
@@ -29,14 +38,12 @@ const ProductCarousel: React.FC<Products> = ({ products, userId }) => {
   return (
     <ScrollArea className="w-full whitespace-nowrap rounded-md">
       <div ref={sliderRef} className="keen-slider">
-        {products.map((product) => (
-          <div key={product.id} className="keen-slider__slide">
-            <ProductPreviewCard
-              userId={userId}
-              id={product.id}
-              name={product.name}
-              price={product.price}
-              supplier={product.supplier}
+        {albums.map((album) => (
+          <div key={album.id} className="keen-slider__slide">
+            <AlbumPreviewCard
+              id={album.id}
+              name={album.name}
+              favorites={album.favorites}
             />
           </div>
         ))}
@@ -46,4 +53,4 @@ const ProductCarousel: React.FC<Products> = ({ products, userId }) => {
   );
 };
 
-export default ProductCarousel;
+export default AlbumCarousel;

@@ -5,84 +5,93 @@ import { useParams } from "next/navigation";
 import { Product, Supplier, Favorite } from "@prisma/client";
 import {
   ArrowLeft,
-  HeartIcon,
+  Heart,
   CheckCircle,
   XCircle,
-  TagIcon,
+  Tag,
   Building,
   Share2,
   MapPin,
 } from "lucide-react";
 import LoadingModal from "../Loading/LoadingModal";
 import Image from "next/image";
-import InlineLoading from "../Loading/InlineLoading";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-export default function ProductInformationCard() {
+export default function ProductInformationCard({ userId }: { userId: string }) {
   const params = useParams<{ id: string }>();
-  const id = `${params.id}`;
+  const id: string = `${params.id}`;
   const [product, setProduct] = useState<Product | null>(null);
   const [supplier, setSupplier] = useState<Supplier | null>(null);
-  const [favorite, setFavorite] = useState<Favorite | null>(null);
+  const [favoritedItem, setFavoritedItem] = useState<Favorite | null>(null);
   const [loading, setLoading] = useState(true);
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("/products/default.jpg");
+  const [imageError, setImageError] = useState<boolean>(false);
   const [locationName, setLocationName] = useState<string>("");
 
   useEffect(() => {
-    const getProductAndSupplier = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`/api/product/${id}`);
-        const { product, supplier, favorite } = await response.json();
+        const [productResponse, imageResponse, favoriteResponse] =
+          await Promise.all([
+            fetch(`/api/product/${id}`),
+            fetch(`/api/product/${id}/image`),
+            fetch(`/api/product/${id}/favorite/${userId}`),
+          ]);
+
+        if (!productResponse.ok)
+          throw new Error("Failed to fetch product data");
+        const imageData = await imageResponse.json();
+        if (!imageResponse.ok || !imageData.publicUrl)
+          throw new Error("Failed to fetch image");
+        if (!favoriteResponse.ok)
+          throw new Error("Failed to fetch favorite status");
+
+        const { product, supplier } = await productResponse.json();
+        const { favorite } = await favoriteResponse.json();
+
         setProduct(product);
         setSupplier(supplier);
-        setFavorite(favorite);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching product:", error);
-        setLoading(false);
-      }
-    };
+        setImageUrl(imageData.publicUrl);
+        setFavoritedItem(favorite);
 
-    const fetchImage = async () => {
-      const response = await fetch(`/api/product/${id}/image`);
-      const data = await response.json();
-      setImageUrl(data.signedUrl);
-    };
-
-    const fetchLocationName = async () => {
-      if (supplier?.businessLocation.includes("google.com/maps")) {
-        try {
-          const response = await fetch(`/api/supplier/location`, {
+        if (supplier?.businessLocation) {
+          const locationResponse = await fetch(`/api/supplier/location`, {
             method: "POST",
             body: JSON.stringify({ locationLink: supplier.businessLocation }),
           });
-          const { locationName } = await response.json();
-          setLocationName(locationName);
-        } catch (error) {
-          console.error("Error fetching location name:", error);
-          setLocationName(supplier.businessLocation);
+          if (locationResponse.ok) {
+            const { locationName } = await locationResponse.json();
+            setLocationName(locationName || supplier.businessLocation);
+          }
         }
-      } else {
-        setLocationName(supplier?.businessLocation || "");
+      } catch (error) {
+        console.error("Error in data fetching:", error);
+        setImageError(true);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchImage();
-    getProductAndSupplier();
-    fetchLocationName();
-  }, [id, supplier?.businessLocation]);
+    fetchData();
+  }, [id, userId]);
 
   const handleFavorite = async () => {
     try {
-      const response = await fetch(`/api/products/${product?.id}/favorite`, {
-        method: favorite ? "DELETE" : "POST",
-      });
-      const updatedFavorite = await response.json();
-      setFavorite(updatedFavorite);
+      const response = await fetch(
+        `/api/product/${product?.id}/favorite/${userId}`,
+        {
+          method: favoritedItem ? "DELETE" : "POST",
+          body: JSON.stringify({ favorite: favoritedItem }),
+        },
+      );
+      if (!response.ok) throw new Error("Failed to update favorite");
+      const { favorite } = await response.json();
+      setFavoritedItem(favorite);
     } catch (error) {
       console.error("Error updating favorite:", error);
     }
@@ -126,22 +135,17 @@ export default function ProductInformationCard() {
                   <ArrowLeft className="w-5 h-5" />
                 </Link>
               </Button>
-
               <div className="relative aspect-square overflow-hidden rounded-lg bg-rawmats-secondary-100">
-                {loading ? (
-                  <InlineLoading />
-                ) : (
-                  <Image
-                    src={imageUrl}
-                    alt={product.name}
-                    width={800}
-                    height={800}
-                    className="object-cover w-full h-full"
-                  />
-                )}
+                <Image
+                  src={imageError ? "/products/default.jpg" : imageUrl}
+                  alt={product.name}
+                  layout="fill"
+                  objectFit="cover"
+                  loading="lazy"
+                  onError={() => setImageError(true)}
+                />
               </div>
             </div>
-
             {/* Right Column - Product Details */}
             <div className="bg-white p-6 lg:p-8 flex flex-col">
               <div className="flex justify-between items-start gap-4">
@@ -175,7 +179,8 @@ export default function ProductInformationCard() {
                     target="_blank"
                     className="text-blue-600 hover:underline mt-4 pt-4 text-md flex flex-row items-center gap-2"
                   >
-                    <MapPin size={18} /> {locationName}
+                    <MapPin size={18} />
+                    {locationName}
                   </Link>
                 </div>
                 <div className="flex gap-2">
@@ -185,12 +190,8 @@ export default function ProductInformationCard() {
                     onClick={handleFavorite}
                     className="shrink-0"
                   >
-                    <HeartIcon
-                      className={`w-5 h-5 ${
-                        favorite
-                          ? "fill-rawmats-feedback-error text-rawmats-feedback-error"
-                          : "text-rawmats-neutral-900"
-                      }`}
+                    <Heart
+                      className={`w-5 h-5 ${favoritedItem ? "fill-current text-red-500" : ""}`}
                     />
                   </Button>
                   <Button variant="outline" size="icon" className="shrink-0">
@@ -198,16 +199,13 @@ export default function ProductInformationCard() {
                   </Button>
                 </div>
               </div>
-
               <Separator className="my-6" />
-
               <div className="space-y-6 flex-1">
                 <div>
                   <p className="text-3xl font-bold text-rawmats-accent-300">
-                    ₱{product.price}
+                    ₱{product.price.toFixed(2)}
                   </p>
                 </div>
-
                 <div className="prose prose-sm">
                   <h3 className="text-lg font-semibold text-rawmats-text-700">
                     Description
@@ -216,7 +214,6 @@ export default function ProductInformationCard() {
                     {product.description}
                   </p>
                 </div>
-
                 <div className="flex items-center gap-2">
                   {product.verified ? (
                     <Badge
@@ -234,10 +231,9 @@ export default function ProductInformationCard() {
                   )}
                 </div>
               </div>
-
               <div className="mt-6 pt-6 border-t">
                 <div className="flex items-center text-sm text-rawmats-neutral-900 gap-2">
-                  <TagIcon className="w-5 h-5 text-rawmats-accent-300" />
+                  <Tag className="w-5 h-5 text-rawmats-accent-300" />
                   Added on {new Date(product.dateAdded).toLocaleDateString()}
                 </div>
               </div>
