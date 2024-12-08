@@ -1,14 +1,21 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { updatePassword } from "../AuthHandlers/ChangePasswordHandler";
-import { useRouter } from "next/navigation";
 
 const schema = z
   .object({
@@ -25,33 +32,30 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 export default function ChangePasswordForm() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
   const router = useRouter();
-
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
   const onSubmit = async (data: FormData) => {
     try {
       setIsLoading(true);
+      setErrorMessage(null);
       const result = await updatePassword(data.password);
       if (result.error) {
         setErrorMessage(result.error);
-        setTimeout(() => {
-          setErrorMessage(null);
-        }, 5000);
       } else {
         router.push(
           `/done?header=${encodeURIComponent("Password Reset")}&message=${encodeURIComponent("Your password has been reset, log in again!")}&type=reset`,
         );
       }
-      setIsLoading(false);
     } catch (error) {
       if (error instanceof Error) {
         router.push(
@@ -62,6 +66,8 @@ export default function ChangePasswordForm() {
           `/error?message=${encodeURIComponent("An unexpected error occurred")}&code=${encodeURIComponent("500")}`,
         );
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,69 +78,69 @@ export default function ChangePasswordForm() {
           Change Password
         </h2>
       </div>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col space-y-4"
-      >
-        <div>
-          <Label
-            htmlFor="password"
-            className="text-body font-semibold text-rawmats-text-700"
-          >
-            New Password
-          </Label>
-          <Input
-            type="password"
-            id="password"
-            {...register("password")}
-            placeholder="Enter new password"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col space-y-4"
+        >
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-body font-semibold text-rawmats-text-700">
+                  New Password
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Enter new password"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.password && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
-        <div>
-          <Label
-            htmlFor="confirmPassword"
-            className="text-body font-semibold text-rawmats-text-700"
-          >
-            Confirm New Password
-          </Label>
-          <Input
-            type="password"
-            id="confirmPassword"
-            {...register("confirmPassword")}
-            placeholder="Confirm new password"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-body font-semibold text-rawmats-text-700">
+                  Confirm New Password
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Confirm new password"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.confirmPassword.message}
-            </p>
+          {errorMessage && (
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 text-rawmats-feedback-error">
+                {errorMessage}
+              </span>
+            </div>
           )}
-        </div>
-
-        {errorMessage ? (
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 text-rawmats-feedback-error">
-              {errorMessage}
-            </span>
+          <div className="flex items-center justify-end mt-4">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
+            >
+              {isLoading ? "Changing password..." : "Change Password"}
+            </Button>
           </div>
-        ) : null}
-
-        <div className="flex items-center justify-end mt-4">
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
-          >
-            {isLoading ? "Changing password..." : "Change Password"}
-          </Button>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 }

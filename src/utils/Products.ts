@@ -6,9 +6,11 @@ export interface ProductWithSupplier extends Product {
 
 export interface Products {
   products: ProductWithSupplier[];
+  userId: string;
 }
 
 export interface ProductPreview {
+  userId: string;
   id: string;
   name: string;
   price: number;

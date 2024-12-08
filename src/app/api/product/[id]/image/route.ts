@@ -5,33 +5,46 @@ import { createClient } from "@/utils/supabase/server";
 
 export const GET = async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: { id: string } },
 ) => {
-  const productId: string = (await params).id || "";
-  const product = await prisma.product.findUnique({
-    where: {
-      id: productId,
-    },
-  });
+  try {
+    const productId = params.id;
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
 
-  if (!product) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
-  }
+    if (!product) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
 
-  const supabase = createClient();
-  const { data, error } = await supabase.storage
-    .from("photos")
-    .createSignedUrl(`${product.image}`, 3600);
+    const supabase = createClient();
+    const { data } = supabase.storage
+      .from("photos")
+      .getPublicUrl(
+        product.image.startsWith("/") ? product.image.slice(1) : product.image,
+      );
 
-  if (error || !data) {
+    if (!data) {
+      console.error("Error fetching image URL");
+      return NextResponse.json(
+        {
+          error: "Error fetching image",
+          fallbackImage: "/products/default.jpg",
+        },
+        { status: 500 },
+      );
+    }
+
+    const { publicUrl } = data;
+    return NextResponse.json({ publicUrl }, { status: 200 });
+  } catch (error) {
+    console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: "Error fetching image" },
+      {
+        error: "An unexpected error occurred",
+        fallbackImage: "/products/default.jpg",
+      },
       { status: 500 },
     );
   }
-
-  const { signedUrl } = data;
-  console.log(signedUrl);
-
-  return NextResponse.json({ signedUrl }, { status: 200 });
 };

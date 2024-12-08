@@ -1,14 +1,21 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { login } from "../AuthHandlers/LoginHandler";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import InlineLoading from "../Loading/InlineLoading";
 
 const schema = z.object({
@@ -21,30 +28,30 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function LoginForm() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
+    setError(null);
+
     try {
       const formData = new FormData();
       formData.append("email", data.email);
       formData.append("password", data.password);
+
       const result = await login(formData);
       if (result.error) {
         setError(result.error);
-        setTimeout(() => {
-          setError(null);
-        }, 5000);
       } else {
         router.push("/");
       }
@@ -65,75 +72,75 @@ export default function LoginForm() {
 
   return (
     <div className="w-full mx-auto flex flex-col justify-center p-6 space-y-6">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col space-y-4"
-      >
-        <div>
-          <Label
-            htmlFor="email"
-            className="text-lg font-semibold text-rawmats-text-700"
-          >
-            Email Address
-          </Label>
-          <Input
-            type="email"
-            id="email"
-            {...register("email")}
-            placeholder="Email"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col space-y-4"
+        >
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold text-rawmats-text-700">
+                  Email Address
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.email.message}
-            </p>
-          )}
-        </div>
-        <div>
-          <Label
-            htmlFor="password"
-            className="text-lg font-semibold text-rawmats-text-700"
-          >
-            Password
-          </Label>
-          <Input
-            type="password"
-            id="password"
-            {...register("password")}
-            placeholder="********"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold text-rawmats-text-700">
+                  Password
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="********"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.password && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.password.message}
-            </p>
+          {error && (
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 text-rawmats-feedback-error">{error}</span>
+            </div>
           )}
-        </div>
-
-        {error ? (
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 text-rawmats-feedback-error">{error}</span>
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex flex-col space-y-1 text-sm text-rawmats-text-500">
+              <a href="/signup" className="hover:text-rawmats-accent-300">
+                Need an account?
+              </a>
+              <a href="/recover" className="hover:text-rawmats-accent-300">
+                Forgot my password
+              </a>
+            </div>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
+            >
+              {isLoading ? <InlineLoading message="Logging in" /> : "Login"}
+            </Button>
           </div>
-        ) : null}
-
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex flex-col space-y-1 text-sm text-rawmats-text-500">
-            <a href="/signup" className="hover:text-rawmats-accent-300">
-              Need an account?
-            </a>
-            <a href="/recover" className="hover:text-rawmats-accent-300">
-              Forgot my password
-            </a>
-          </div>
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
-          >
-            {isLoading ? <InlineLoading message="Logging in" /> : "Login"}
-          </Button>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 }

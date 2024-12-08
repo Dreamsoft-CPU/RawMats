@@ -21,12 +21,6 @@ export const GET = async () => {
   }
 };
 
-// export const GET = async () => {
-//   // This route gets ALL products
-//   // Use prisma to retrieve data AND include supplier data to get supplier business name
-//   // We will limit it to supplier name only, so we can save bandwidth
-// };
-
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
@@ -54,16 +48,11 @@ export const POST = async (req: NextRequest) => {
 
     revalidatePath("/", "layout");
     return NextResponse.json(product, { status: 201 });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error creating product:", error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    } else {
-      console.error("Unexpected error:", error);
-      return NextResponse.json(
-        { error: "An unexpected error occurred." },
-        { status: 500 },
-      );
-    }
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return NextResponse.json(
+      { error: "An unexpected error occurred while creating the product." },
+      { status: 500 },
+    );
   }
 };
