@@ -28,6 +28,20 @@ const AdminDashboard = async () => {
     redirect("/login");
   }
 
+  const isAdmin = await prisma.user.findUnique({
+    where: {
+      id: data.user.id,
+    },
+    select: {
+      role: true,
+    },
+  });
+
+  // redirect if user is not an admin
+  if (isAdmin && isAdmin.role !== "ADMIN") {
+    redirect("/");
+  }
+
   const fetchedProducts = await prisma.product.findMany({
     where: {
       verified: false,
