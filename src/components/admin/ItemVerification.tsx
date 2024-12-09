@@ -78,7 +78,7 @@ export function ItemVerification({
 
   return (
     <>
-      <ScrollArea className="h-[calc(100vh-12rem)]">
+      <ScrollArea className="h-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
           {products.map((product) => (
             <Card key={product.id} className="flex flex-col">

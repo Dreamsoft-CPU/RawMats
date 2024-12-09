@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
-
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/utils/prisma/client";
 import { parseAuthError } from "./AuthErrorHandler";
@@ -48,7 +47,6 @@ export async function signup(formData: FormData) {
     const { name, email, phone, password } = result.data;
 
     const supabase = createClient();
-
     const { error, data } = await supabase.auth.signUp({
       email,
       password,
@@ -70,28 +68,19 @@ export async function signup(formData: FormData) {
 
       if (!uniqueUser) {
         console.log("First time login");
-        let email: string = "no-email";
-        let display_name: string = "no-name";
-
-        if (user.email) {
-          email = user.email;
-        }
-
-        if (user.user_metadata.display_name) {
-          display_name = user.user_metadata.display_name;
-        }
+        const userEmail: string = user.email || "no-email";
+        const displayName: string =
+          user.user_metadata.display_name || "no-name";
 
         await prisma.user.create({
           data: {
             id: user.id,
-            email: email,
-            displayName: display_name,
+            email: userEmail,
+            displayName: displayName,
           },
         });
       }
     }
-
-    console.log(data);
 
     if (error) {
       return parseAuthError(error);
@@ -100,10 +89,12 @@ export async function signup(formData: FormData) {
     return { error: null };
   } catch (error) {
     if (error instanceof Error) {
-      redirect(`/error?message=${encodeURIComponent(error.message)}`);
+      redirect(
+        `/error?message=${encodeURIComponent(error.message)}&code=${encodeURIComponent("400")}`,
+      );
     } else {
       redirect(
-        `/error?message=${encodeURIComponent("An unexpected error occurred")}`,
+        `/error?message=${encodeURIComponent("An unexpected error occurred")}&code=${encodeURIComponent("500")}`,
       );
     }
   }

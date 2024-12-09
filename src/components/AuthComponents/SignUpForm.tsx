@@ -1,16 +1,22 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { signup } from "../AuthHandlers/SignupHandler";
-import { SignupFormData } from "@/types/types";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import InlineLoading from "../Loading/InlineLoading";
 
 const schema = z
@@ -37,20 +43,25 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 export default function SignUpForm() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const onSubmit = async (data: SignupFormData) => {
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (data: FormData) => {
     setIsLoading(true);
+    setError(null);
+
     try {
       const payload = new FormData();
       Object.entries(data).forEach(([key, value]) =>
@@ -58,12 +69,8 @@ export default function SignUpForm() {
       );
 
       const result = await signup(payload);
-
       if (result.error) {
         setError(result.error);
-        setTimeout(() => {
-          setError(null);
-        }, 5000);
       } else {
         router.push(
           `/done?header=${encodeURIComponent("Email confirmation sent")}&message=${encodeURIComponent("Check your inbox for a confirmation link")}&type=email`,
@@ -86,139 +93,139 @@ export default function SignUpForm() {
 
   return (
     <div className="w-full mx-auto flex flex-col justify-center">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col p-6 space-y-1"
-      >
-        <div>
-          <Label
-            htmlFor="name"
-            className="text-lg font-semibold text-rawmats-text-700"
-          >
-            Name
-          </Label>
-          <Input
-            type="text"
-            id="name"
-            {...register("name")}
-            placeholder="Full Name"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col p-6 space-y-4"
+        >
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold text-rawmats-text-700">
+                  Name
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Full Name"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.name && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.name.message}
-            </p>
-          )}
-        </div>
 
-        <div>
-          <Label
-            htmlFor="email"
-            className="text-lg font-semibold text-rawmats-text-700"
-          >
-            Email Address
-          </Label>
-          <Input
-            type="email"
-            id="email"
-            {...register("email")}
-            placeholder="Email"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold text-rawmats-text-700">
+                  Email Address
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.email.message}
-            </p>
-          )}
-        </div>
 
-        <div>
-          <Label
-            htmlFor="phone"
-            className="text-lg font-semibold text-rawmats-text-700"
-          >
-            Phone Number
-          </Label>
-          <Input
-            type="text"
-            id="phone"
-            {...register("phone")}
-            placeholder="09xxxxxxxxx"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold text-rawmats-text-700">
+                  Phone Number
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="09xxxxxxxxx"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.phone && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.phone.message}
-            </p>
-          )}
-        </div>
 
-        <div>
-          <Label
-            htmlFor="password"
-            className="text-lg font-semibold text-rawmats-text-700"
-          >
-            Password
-          </Label>
-          <Input
-            type="password"
-            id="password"
-            {...register("password")}
-            placeholder="********"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold text-rawmats-text-700">
+                  Password
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="********"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.password && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
 
-        <div>
-          <Label
-            htmlFor="confirmPassword"
-            className="text-lg font-semibold text-rawmats-text-700"
-          >
-            Confirm Password
-          </Label>
-          <Input
-            type="password"
-            id="confirmPassword"
-            {...register("confirmPassword")}
-            placeholder="********"
-            className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg font-semibold text-rawmats-text-700">
+                  Confirm Password
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="********"
+                    className="mt-1 w-full rounded-lg border-rawmats-neutral-700 shadow-sm focus:border-rawmats-accent-300 focus:ring-rawmats-accent-300 bg-white text-rawmats-text-700"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-rawmats-feedback-error">
-              {errors.confirmPassword.message}
-            </p>
+
+          {error && (
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 text-rawmats-feedback-error">{error}</span>
+            </div>
           )}
-        </div>
 
-        {error ? (
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 text-rawmats-feedback-error">{error}</span>
-          </div>
-        ) : null}
-
-        <div className="justify-between flex flex-row mt-2 md:mt-0 md:flex-row items-center">
-          <Link
-            className="text-rawmats-primary-700 text-xs font-medium italic hover:text-rawmats-primary-300 lg:text-sm"
-            href="/login"
-          >
-            Already have an account?
-          </Link>
-          <div className="flex items-center mt-4">
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
+          <div className="justify-between flex flex-row mt-2 md:mt-0 md:flex-row items-center">
+            <Link
+              className="text-rawmats-primary-700 text-xs font-medium italic hover:text-rawmats-primary-300 lg:text-sm"
+              href="/login"
             >
-              {isLoading ? <InlineLoading message="Signing up" /> : "Sign Up"}
-            </Button>
+              Already have an account?
+            </Link>
+            <div className="flex items-center mt-4">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="px-6 py-2 bg-rawmats-primary-700 text-white rounded-lg hover:bg-rawmats-primary-300 active:bg-rawmats-primary-700 transition-colors"
+              >
+                {isLoading ? <InlineLoading message="Signing up" /> : "Sign Up"}
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 }

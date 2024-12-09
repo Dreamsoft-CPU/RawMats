@@ -1,24 +1,35 @@
 "use client";
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import LocationSelect from "./LocationSelect";
-import { useEffect, useRef, useState } from "react";
-import { uploadFile } from "@/utils/supabase/files";
-import Image from "next/image";
-import { FaUpload } from "react-icons/fa";
-import { User } from "@supabase/supabase-js";
-import InlineLoading from "../Loading/InlineLoading";
+import React, { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { User } from "@supabase/supabase-js";
+import Image from "next/image";
+import { Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import LocationSelect from "./LocationSelect";
+import { uploadFile } from "@/utils/supabase/files";
+import InlineLoading from "../Loading/InlineLoading";
 
-export type ApplicationFormData = {
-  businessName: string;
-  businessAddress: string;
-  businessDocuments: FileList;
-};
+const formSchema = z.object({
+  businessName: z.string().min(1, "Business name is required"),
+  businessAddress: z.string().min(1, "Business address is required"),
+  businessDocuments: z.any(),
+});
 
-export default function SupplyForm({
+type FormValues = z.infer<typeof formSchema>;
+
+export default function SupplierForm({
   apiKey,
   mapId,
   user,
@@ -27,52 +38,66 @@ export default function SupplyForm({
   mapId: string;
   user: User;
 }) {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    trigger,
-    formState: { errors },
-  } = useForm<ApplicationFormData>();
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      businessName: "",
+      businessAddress: "",
+      businessDocuments: undefined,
+    },
+  });
 
-  const [businessAddress, setBusinessAddress] = useState<null | string>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filePreviews, setFilePreviews] = useState<string[]>([]);
-  const [fileCount, setFileCount] = useState<number>(0);
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    if (businessAddress !== null) {
-      setValue("businessAddress", businessAddress);
-      trigger("businessAddress");
-    }
-  }, [businessAddress, setValue, trigger]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newPreviews = Array.from(files).map((file) =>
-        URL.createObjectURL(file),
-      );
-      setFilePreviews(newPreviews);
-      setFileCount(files.length);
-
-      setValue("businessDocuments", files);
-      trigger("businessDocuments");
-    }
-  };
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        setSelectedFiles(files);
+        const newPreviews = Array.from(files).map((file) =>
+          URL.createObjectURL(file),
+        );
+        setFilePreviews((prevPreviews) => {
+          // Clean up old preview URLs
+          prevPreviews.forEach(URL.revokeObjectURL);
+          return newPreviews;
+        });
+      }
+    },
+    [],
+  );
 
   const handleFileUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  const onSubmit = async (data: ApplicationFormData) => {
+  // Handler for updating the business address
+  const handleBusinessAddressChange = (address: string) => {
+    form.setValue("businessAddress", address, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
+
+  const onSubmit = async (data: FormValues) => {
+    if (!selectedFiles || selectedFiles.length === 0) {
+      setError("Please upload at least one file");
+      setTimeout(() => setError(null), 5000);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch("/api/supplier", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           businessName: data.businessName,
           businessAddress: data.businessAddress,
@@ -80,12 +105,11 @@ export default function SupplyForm({
         }),
       });
 
-      Array.from(data.businessDocuments).forEach(async (file) => {
-        await uploadFile(file, user);
-      });
+      await Promise.all(
+        Array.from(selectedFiles).map((file) => uploadFile(file, user)),
+      );
 
-      const result: { success: boolean } = await response.json();
-
+      const result = await response.json();
       if (!result.success) {
         setError("An error occurred while submitting your application");
         setTimeout(() => {
@@ -93,17 +117,25 @@ export default function SupplyForm({
         }, 5000);
       } else {
         router.push(
-          `/done?header=${encodeURIComponent("Supplier form sent!")}&message=${encodeURIComponent("Kindly wait for your application to be verified")}`,
+          `/done?header=${encodeURIComponent(
+            "Supplier form sent!",
+          )}&message=${encodeURIComponent(
+            "Kindly wait for your application to be verified",
+          )}`,
         );
       }
     } catch (error) {
       if (error instanceof Error) {
         router.push(
-          `/error?message=${encodeURIComponent(error.message)}&code=${encodeURIComponent("500")}`,
+          `/error?message=${encodeURIComponent(
+            error.message,
+          )}&code=${encodeURIComponent("500")}`,
         );
       } else {
         router.push(
-          `/error?message=${encodeURIComponent("An unexpected error occurred")}&code=${encodeURIComponent("500")}`,
+          `/error?message=${encodeURIComponent(
+            "An unexpected error occurred",
+          )}&code=${encodeURIComponent("500")}`,
         );
       }
     } finally {
@@ -111,98 +143,89 @@ export default function SupplyForm({
     }
   };
 
+  // Cleanup preview URLs when component unmounts
+  React.useEffect(() => {
+    return () => {
+      filePreviews.forEach(URL.revokeObjectURL);
+    };
+  }, [filePreviews]);
+
   return (
-    <div className="max-w-md p-6 font-inter mt-[-0.7rem] m-auto">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-        <div className="relative mb-8 mt-2">
-          {errors.businessName && (
-            <p className="absolute left-0 -top-4 text-red-500 text-xs">
-              {errors.businessName.message}
-            </p>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="businessName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Business Name</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter your business name"
+                  className="p-5 border border-gray-400 focus:border-[#0A0830] focus:ring focus:ring-[#0A0830] rounded-xl"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-          <Input
-            type="text"
-            id="businessName"
-            {...register("businessName", {
-              required: "Business name is required",
-            })}
-            placeholder="Business Name"
-            className="w-full p-5 border border-gray-400 focus:border-[#0A0830] focus:ring focus:ring-[#0A0830] rounded-xl"
-          />
-        </div>
+        />
 
-        <div className="flex flex-col mb-8">
-          <div className="relative flex items-center">
-            {errors.businessAddress && (
-              <p className="absolute left-0 -top-4 text-red-500 text-xs">
-                {errors.businessAddress.message}
-              </p>
-            )}
-            <Input
-              type="text"
-              id="address"
-              value={businessAddress ?? ""}
-              {...register("businessAddress", {
-                required: "Business address is required",
-              })}
-              placeholder="Select your business address"
-              className="flex-1 p-5 border border-gray-400 focus:border-[#0A0830] focus:ring focus:ring-[#0A0830] rounded-xl"
-              readOnly
-            />
-            <div className="ml-2">
-              <LocationSelect
-                apiKey={apiKey}
-                mapId={mapId}
-                setBusinessAddress={setBusinessAddress}
-              />
+        <FormField
+          control={form.control}
+          name="businessAddress"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Business Address</FormLabel>
+              <FormControl>
+                <div className="flex items-center">
+                  <Input
+                    placeholder="Select your business address"
+                    className="flex-1 p-5 border border-gray-400 focus:border-[#0A0830] focus:ring focus:ring-[#0A0830] rounded-xl"
+                    readOnly
+                    {...field}
+                  />
+                  <div className="ml-2">
+                    <LocationSelect
+                      apiKey={apiKey}
+                      mapId={mapId}
+                      setBusinessAddress={handleBusinessAddressChange}
+                    />
+                  </div>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormItem>
+          <FormLabel>Business Documents</FormLabel>
+          <FormControl>
+            <div className="flex items-center border border-gray-400 rounded-xl p-3 bg-white">
+              <span className="flex-1 text-gray-500 text-sm">
+                {selectedFiles?.length
+                  ? `${selectedFiles.length} file(s) selected`
+                  : "Choose Files"}
+              </span>
+              <Button
+                type="button"
+                onClick={handleFileUploadClick}
+                className="bg-rawmats-primary-700 text-white hover:bg-rawmats-primary-500 transition-colors"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Upload
+              </Button>
             </div>
-          </div>
-        </div>
-
-        <div className="relative mb-8">
-          {errors.businessDocuments && (
-            <p className="absolute left-0 -top-4 text-red-500 text-xs">
-              {errors.businessDocuments.message}
-            </p>
-          )}
-          <div className="flex items-center border border-gray-400 rounded-xl p-1 bg-white">
-            <Label
-              htmlFor="businessDocuments"
-              className="flex-1 ml-2 text-gray-500 text-sm"
-            >
-              Business Documents
-            </Label>
-
-            <Button
-              type="button"
-              onClick={handleFileUploadClick}
-              className="flex items-center bg-gray-200 text-gray-700 hover:bg-gray-300 p-2 text-xs rounded ml-2"
-            >
-              <FaUpload
-                className="mr-1 text-xs ml-auto"
-                style={{ fontSize: "0.4rem" }}
-              />
-              <span className="text-xs">Choose Files</span>
-            </Button>
-          </div>
-
-          <Input
+          </FormControl>
+          <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             multiple
-            {...register("businessDocuments", {
-              required: "Please upload at least one file",
-              validate: {
-                checkFileCount: (value) =>
-                  (value && value.length > 0) ||
-                  "Please upload at least one file",
-              },
-            })}
-            ref={fileInputRef}
             onChange={handleFileChange}
             className="hidden"
           />
-
           <div className="grid grid-cols-3 gap-3 mt-3">
             {filePreviews.map((preview, index) => (
               <Image
@@ -215,19 +238,11 @@ export default function SupplyForm({
               />
             ))}
           </div>
+        </FormItem>
 
-          {fileCount > 0 && (
-            <p className="mt-2 text-gray-600">
-              {fileCount} file{fileCount > 1 ? "s" : ""} selected.
-            </p>
-          )}
-        </div>
-
-        {error ? (
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 text-rawmats-feedback-error">{error}</span>
-          </div>
-        ) : null}
+        {error && (
+          <div className="text-sm text-red-500 text-center">{error}</div>
+        )}
 
         <div className="flex justify-center">
           <Button
@@ -239,6 +254,6 @@ export default function SupplyForm({
           </Button>
         </div>
       </form>
-    </div>
+    </Form>
   );
 }

@@ -18,16 +18,14 @@ export default async function Home({
 }) {
   const page = Number(searchParams.page) || 1;
   const supabase = createClient();
-  const { data, error } = await supabase.auth.getUser();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  if (error || !data.user) {
+  if (userError || !userData?.user) {
     redirect("/login");
   }
 
   const user = await prisma.user.findUnique({
-    where: {
-      id: data.user.id,
-    },
+    where: { id: userData.user.id },
   });
 
   if (!user) {
@@ -35,19 +33,17 @@ export default async function Home({
   }
 
   const supplier = await prisma.supplier.findUnique({
-    where: {
-      userId: user.id,
-    },
+    where: { userId: user.id, verified: true },
   });
 
   const allProducts: ProductWithSupplier[] = await prisma.product.findMany({
-    include: {
-      supplier: true,
-    },
+    include: { supplier: true },
+    where: { verified: true },
+    orderBy: { dateAdded: "desc" },
   });
 
   const dailyDiscoverProducts = allProducts.slice(0, 8);
-  const newArrivalsProducts = allProducts.slice(4, 8);
+  const newArrivalsProducts = allProducts.slice(0, 4);
   const paginatedProducts = allProducts.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
@@ -55,27 +51,24 @@ export default async function Home({
   const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-rawmats-background-700 to-rawmats-secondary-100">
       <NavBar user={user} supplier={supplier} />
-
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-rawmats-primary-700 mb-6">
             Daily Discover
           </h2>
-          <div className="font-bold text-rawmats-primary-700 mb-6">
-            <ProductCarousel products={dailyDiscoverProducts} />
-          </div>
+          <ProductCarousel userId={user.id} products={dailyDiscoverProducts} />
         </section>
-
-        <section className="flex flex-col mb-12">
+        <section className="mb-12">
           <h2 className="text-2xl font-bold text-rawmats-primary-700 mb-6">
             New Arrivals
           </h2>
-          <div className="self-center grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {newArrivalsProducts.map((product) => (
               <ProductPreviewCard
                 key={product.id}
+                userId={user.id}
                 id={product.id}
                 name={product.name}
                 price={product.price}
@@ -84,7 +77,6 @@ export default async function Home({
             ))}
           </div>
         </section>
-
         <section>
           <h2 className="text-2xl font-bold text-rawmats-primary-700 mb-6">
             Browse All
@@ -93,6 +85,7 @@ export default async function Home({
             {paginatedProducts.map((product) => (
               <ProductPreviewCard
                 key={product.id}
+                userId={user.id}
                 id={product.id}
                 name={product.name}
                 price={product.price}
@@ -119,7 +112,6 @@ export default async function Home({
           </div>
         </section>
       </main>
-
       <footer className="bg-rawmats-primary-900 text-rawmats-secondary-100 py-6 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm">

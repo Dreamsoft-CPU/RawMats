@@ -20,7 +20,7 @@ export function SupplierVerification({
 }: {
   suppliers: (Supplier & { user: User })[];
 }) {
-  const [files, setFiles] = useState<(string | null)[]>([]);
+  const [files, setFiles] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState<{
     status: boolean;
     method: null | "verify" | "reject";
@@ -28,17 +28,21 @@ export function SupplierVerification({
 
   useEffect(() => {
     const fetchFiles = async () => {
+      const filesMap: Record<string, string[]> = {}; // Define the type for filesMap
+
       await Promise.all(
         suppliers.map(async (supplier) => {
-          const files = await retrieveFile(supplier.userId);
+          const rawFiles = await retrieveFile(supplier.userId);
 
-          if (!files) {
-            setFiles([]);
-          } else {
-            setFiles(files);
-          }
+          const filteredFiles = (rawFiles || []).filter(
+            (file): file is string => file !== null,
+          ); // Remove nulls
+
+          filesMap[supplier.userId] = filteredFiles;
         }),
       );
+
+      setFiles(filesMap);
     };
 
     fetchFiles();
@@ -97,20 +101,22 @@ export function SupplierVerification({
   };
 
   return (
-    <ScrollArea>
+    <ScrollArea className="h-full">
       {suppliers.map((supplier) => (
         <Card className="my-3" key={supplier.id}>
           <CardHeader>
-            <CardTitle className="text-3xl">{supplier.businessName}</CardTitle>
+            <CardTitle className="text-xl md:text-3xl">
+              {supplier.businessName}
+            </CardTitle>
             <div className="flex flex-col gap-2 text-muted-foreground">
-              <div className="flex flex-row gap-2 items-center text-base">
-                <UserRound />
+              <div className="flex flex-row gap-2 items-center text-sm md:text-base">
+                <UserRound className="size-4 sm:size-5 md:size-6" />
                 {supplier.user.displayName}
               </div>
-              <div className="flex flex-row gap-2 items-center text-base">
-                <MapPin />
+              <div className="flex flex-row gap-2 items-center text-[10px] md:text-base">
+                <MapPin className="size-4 sm:size-5 md:size-6 shrink-0" />
                 <a
-                  className="underline"
+                  className="underline shrink"
                   href={supplier.businessLocation}
                   target="_blank"
                 >
@@ -120,12 +126,13 @@ export function SupplierVerification({
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-lg">Business Documents:</p>
-            <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
-              {files.length === 0 && (
+            <p className="text-base md:text-lg">Business Documents:</p>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {(!files[supplier.userId] ||
+                files[supplier.userId].length === 0) && (
                 <Skeleton className="h-[300px] w-[450px] rounded-lg" />
               )}
-              {files.map((file, index) =>
+              {files[supplier.userId]?.map((file, index) =>
                 file ? (
                   <Image
                     key={index}
