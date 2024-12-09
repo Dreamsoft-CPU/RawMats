@@ -18,6 +18,7 @@ import {
   ShieldEllipsis,
   LogOut,
   Flag,
+  Heart,
 } from "lucide-react";
 import { User, Supplier } from "@prisma/client";
 import { logout } from "../AuthHandlers/LoginHandler";
@@ -42,6 +43,10 @@ export function SheetMenu({ user, supplier }: SheetMenuProps) {
         `/error?message=${encodeURIComponent("An unexpected error occurred")}&code=500`,
       );
     }
+  };
+
+  const goToFavorites = () => {
+    router.push("/favorites");
   };
 
   return (
@@ -87,6 +92,13 @@ export function SheetMenu({ user, supplier }: SheetMenuProps) {
             onClick={() => router.push("/profile")}
           >
             <CircleUser className="mr-2" /> Profile
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={goToFavorites}
+          >
+            <Heart className="mr-2" /> Favorites
           </Button>
           {isSupplier ? (
             <Button

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import MapView from "./maps/mapView";
+import { MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -12,71 +12,75 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { MapPinIcon } from "@heroicons/react/24/outline";
+import MapView from "./maps/mapView";
 
-function LocationSelect({
+interface LocationSelectProps {
+  apiKey: string;
+  mapId: string;
+  setBusinessAddress: (location: string) => void;
+}
+
+export default function LocationSelect({
   apiKey,
   mapId,
   setBusinessAddress,
-}: {
-  apiKey: string;
-  mapId: string;
-  setBusinessAddress: (location: null | string) => void;
-}) {
-  const [address, setAddress] = useState<null | google.maps.LatLngLiteral>(
+}: LocationSelectProps) {
+  const [address, setAddress] = useState<google.maps.LatLngLiteral | null>(
     null,
   );
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleConfirm = () => {
+    if (address) {
+      setBusinessAddress(
+        `https://www.google.com/maps/place/${address.lat},${address.lng}`,
+      );
+      setIsOpen(false);
+    }
+  };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <div className="h-11 flex items-center">
-          <Button
-            type="button"
-            variant="default"
-            className="p-2 bg-[#0A0830] text-white border border-[#5477e8a4] rounded hover:bg-blue-500 transition-colors"
-          >
-            <MapPinIcon className="h-7 w-6 text-white" aria-hidden="true" />
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="bg-[#0A0830] text-white border-[#5477e8a4] hover:bg-blue-500 transition-colors"
+        >
+          <MapPin className="h-4 w-4" />
+          <span className="sr-only">Select location</span>
+        </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-[95%] overflow-y-scroll max-h-screen">
+      <DialogContent className="sm:max-w-[95%] max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Select location</DialogTitle>
           <DialogDescription>
-            Pinpoint the location of your business on the map and submit.
+            Pinpoint the location of your business on the map and confirm.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex h-[600px] md:h-[500px] w-full">
+        <div className="h-[60vh] w-full">
           <MapView apiKey={apiKey} mapId={mapId} setAddress={setAddress} />
         </div>
-        <DialogFooter className={`sm:justify-start ${address && "gap-3"}`}>
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              Close
-            </Button>
-          </DialogClose>
+        <DialogFooter className="sm:justify-start gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setIsOpen(false)}
+          >
+            Close
+          </Button>
           {address && (
-            <DialogClose asChild>
-              <Button
-                type="button"
-                variant="default"
-                onClick={() => {
-                  setBusinessAddress(
-                    `https://www.google.com/maps/place/${address.lat},${address.lng}`,
-                  );
-                }}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Confirm Selection
-              </Button>
-            </DialogClose>
+            <Button
+              type="button"
+              onClick={handleConfirm}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Confirm Selection
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-export default LocationSelect;

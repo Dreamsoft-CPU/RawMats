@@ -24,6 +24,7 @@ model User {
   updatedAt      DateTime   @updatedAt
   supplier       Supplier? // Optional because not every user is a supplier
   favorites      Favorite[] // One user can have many favorites
+  albums         Album[] // One user can have many albums
 }
 
 enum Role {
@@ -75,5 +76,8 @@ model Album {
   id          String     @id @default(cuid())
   name        String
   description String
+  userId      String
+  createdAt   DateTime   @default(now())
+  user        User       @relation(fields: [userId], references: [id])
   favorites   Favorite[] // An album can contain many favorites
 }

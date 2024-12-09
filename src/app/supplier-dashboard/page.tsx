@@ -10,7 +10,7 @@ const DesktopSupplier = dynamic(
   {
     loading: () => <p>Loading desktop supplier dashboard...</p>,
     ssr: true,
-  },
+  }
 );
 
 const MobileSupplier = dynamic(
@@ -18,7 +18,7 @@ const MobileSupplier = dynamic(
   {
     loading: () => <p>Loading mobile supplier dashboard...</p>,
     ssr: true,
-  },
+  }
 );
 
 const SupplierDashboard = async () => {
@@ -32,6 +32,9 @@ const SupplierDashboard = async () => {
     where: {
       userId: data.user.id,
       verified: true,
+    },
+    include: {
+      user: true,
     },
   });
 
@@ -55,7 +58,7 @@ const SupplierDashboard = async () => {
     if (error) {
       console.error(
         "Error fetching signed URL for product image:",
-        error.message,
+        error.message
       );
     }
 
@@ -64,14 +67,24 @@ const SupplierDashboard = async () => {
     }
   }
 
+  const supplierName = isSupplier.user.displayName;
+
   return (
     <div className="w-full min-h-screen flex items-center justify-center">
       <Suspense fallback={<div>Loading...</div>}>
         <div className="hidden md:flex w-full h-screen items-center justify-center">
-          <DesktopSupplier fetchedProducts={products} userID={isSupplier.id} />
+          <DesktopSupplier
+            fetchedProducts={products}
+            userID={isSupplier.id}
+            supplierName={supplierName}
+          />
         </div>
         <div className="md:hidden w-full h-screen">
-          <MobileSupplier fetchedProducts={products} userID={isSupplier.id} />
+          <MobileSupplier
+            fetchedProducts={products}
+            userID={isSupplier.id}
+            supplierName={supplierName}
+          />
         </div>
       </Suspense>
     </div>

@@ -3,11 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-
 import { createClient } from "@/utils/supabase/server";
 import { parseAuthError } from "./AuthErrorHandler";
 
-// Define the schema for login data
 const LoginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
@@ -29,7 +27,6 @@ export async function login(formData: FormData) {
 
     const { email, password } = parseResult.data;
 
-    // Logs in the user
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -43,23 +40,35 @@ export async function login(formData: FormData) {
     return { error: null };
   } catch (error) {
     if (error instanceof Error) {
-      redirect(`/error?message=${encodeURIComponent(error.message)}`);
+      redirect(
+        `/error?message=${encodeURIComponent(error.message)}&code=${encodeURIComponent("400")}`,
+      );
     } else {
       redirect(
-        `/error?message=${encodeURIComponent("An unexpected error occurred")}`,
+        `/error?message=${encodeURIComponent("An unexpected error occurred")}&code=${encodeURIComponent("500")}`,
       );
     }
   }
 }
 
 export async function logout() {
-  const supabase = createClient();
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    throw error;
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw error;
+    }
+    revalidatePath("/", "layout");
+    redirect("/login");
+  } catch (error) {
+    if (error instanceof Error) {
+      redirect(
+        `/error?message=${encodeURIComponent(error.message)}&code=${encodeURIComponent("500")}`,
+      );
+    } else {
+      redirect(
+        `/error?message=${encodeURIComponent("An unexpected error occurred during logout")}&code=${encodeURIComponent("500")}`,
+      );
+    }
   }
-
-  revalidatePath("/", "layout");
-  redirect("/login");
 }

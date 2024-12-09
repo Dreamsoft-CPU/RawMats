@@ -7,9 +7,9 @@ export interface SignupFormData {
 }
 
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   price: number;
   description: string;
-  image: string | null;
+  image?: string;
 }

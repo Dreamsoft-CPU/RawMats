@@ -1,38 +1,24 @@
-import DynamicScreen from "@/components/AuthComponents/DynamicScreen";
 import React from "react";
-import DesktopDoneBody from "@/components/AuthComponents/DoneScreen/DesktopDoneBody";
-import MobileDoneBody from "@/components/AuthComponents/DoneScreen/MobileDoneBody";
+import DoneScreen from "@/components/AuthComponents/DoneScreen";
+import DoneButton from "@/components/AuthComponents/DoneButton";
 
 const DonePage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams: { [key: string]: string | string[] | undefined };
 }) => {
-  const header = `${(await searchParams).header}` || "";
-  const message = `${(await searchParams).message}` || "";
-  const parsedHeader = decodeURIComponent(header);
-  const parsedMessage = decodeURIComponent(message);
-  const body = <DesktopDoneBody />;
-  const mobileBody = (
-    <MobileDoneBody
-      header={""}
-      message={""}
-      body={body}
-      mobileHeader={parsedHeader}
-      mobileMessage={parsedMessage}
-    />
-  );
+  const header =
+    typeof searchParams.header === "string"
+      ? decodeURIComponent(searchParams.header)
+      : "";
+  const message =
+    typeof searchParams.message === "string"
+      ? decodeURIComponent(searchParams.message)
+      : "";
 
-  return (
-    <DynamicScreen
-      header={parsedHeader}
-      message={parsedMessage}
-      body={body}
-      mobileBody={mobileBody}
-      mobileHeader={parsedHeader}
-      mobileMessage={parsedMessage}
-    />
-  );
+  const body = <DoneButton />;
+
+  return <DoneScreen header={header} message={message} body={body} />;
 };
 
 export default DonePage;

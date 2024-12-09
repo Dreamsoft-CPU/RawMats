@@ -1,60 +1,38 @@
-import React from "react";
+import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { Suspense } from "react";
-import { AuthScreenProps } from "@/utils/AuthScreenProps";
+import { User } from "@supabase/supabase-js";
 import LoadingModal from "../Loading/LoadingModal";
 
-const DesktopAuthScreen = dynamic(
-  () => import("@/components/Screens/DesktopAuthScreen"),
-  {
-    loading: () => <LoadingModal message="Loading desktop view..." />,
-    ssr: true,
-  },
-);
+const AuthScreen = dynamic(() => import("@/components/Screens/AuthScreen"), {
+  loading: () => <LoadingModal message="Loading..." />,
+  ssr: true,
+});
 
-const MobileAuthScreen = dynamic(
-  () => import("@/components/Screens/MobileAuthScreen"),
-  {
-    loading: () => <LoadingModal message="Loading mobile view..." />,
-    ssr: true,
-  },
-);
+interface DynamicScreenProps {
+  header: string;
+  message: string;
+  body: React.ReactNode;
+  user?: User;
+  isSupplierForm?: boolean;
+}
 
-const DynamicScreen: React.FC<AuthScreenProps> = ({
+const DynamicScreen: React.FC<DynamicScreenProps> = ({
   header,
   message,
   body,
-  mobileBody,
-  mobileHeader,
-  mobileMessage,
+  user,
+  isSupplierForm = false,
 }) => {
   return (
-    <div className="w-full min-h-screen flex items-center justify-center">
-      <Suspense fallback={<LoadingModal />}>
-        <div className="hidden md:flex w-full h-screen items-center justify-center">
-          <DesktopAuthScreen header={header} message={message} body={body} />
-        </div>
-        <div className="md:hidden w-full h-screen">
-          {mobileBody && !mobileHeader && !mobileMessage ? (
-            <MobileAuthScreen
-              header={header}
-              message={message}
-              body={mobileBody}
-            />
-          ) : mobileBody && mobileHeader && mobileMessage ? (
-            <MobileAuthScreen
-              header={""}
-              message={""}
-              body={mobileBody}
-              mobileHeader={mobileHeader}
-              mobileMessage={mobileMessage}
-            />
-          ) : (
-            <MobileAuthScreen header={header} message={message} body={body} />
-          )}
-        </div>
-      </Suspense>
-    </div>
+    <Suspense fallback={<LoadingModal />}>
+      <AuthScreen
+        header={header}
+        message={message}
+        body={body}
+        user={user}
+        isSupplierForm={isSupplierForm}
+      />
+    </Suspense>
   );
 };
 

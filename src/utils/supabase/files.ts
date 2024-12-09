@@ -9,7 +9,7 @@ const supabase = createClient(
 // Upload file using standard upload
 export async function uploadFile(file: File, user: User) {
   const { data, error } = await supabase.storage
-    .from("photos")
+    .from("documents")
     .upload(`business-docs/${user.id}/${file.name}`, file, {
       contentType: "image/*",
     });
