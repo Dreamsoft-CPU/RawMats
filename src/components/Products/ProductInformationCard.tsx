@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Product, Supplier, Favorite } from "@prisma/client";
@@ -28,37 +27,27 @@ export default function ProductInformationCard({ userId }: { userId: string }) {
   const [supplier, setSupplier] = useState<Supplier | null>(null);
   const [favoritedItem, setFavoritedItem] = useState<Favorite | null>(null);
   const [loading, setLoading] = useState(true);
-  const [imageUrl, setImageUrl] = useState<string>("/products/default.jpg");
-  const [imageError, setImageError] = useState<boolean>(false);
   const [locationName, setLocationName] = useState<string>("");
+  const [imageError, setImageError] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [productResponse, imageResponse, favoriteResponse] =
-          await Promise.all([
-            fetch(`/api/product/${id}`),
-            fetch(`/api/product/${id}/image`),
-            fetch(`/api/product/${id}/favorite/${userId}`),
-          ]);
-
+        const [productResponse, favoriteResponse] = await Promise.all([
+          fetch(`/api/product/${id}`),
+          fetch(`/api/product/${id}/favorite/${userId}`),
+        ]);
         if (!productResponse.ok)
           throw new Error("Failed to fetch product data");
-        const imageData = await imageResponse.json();
-        if (!imageResponse.ok || !imageData.publicUrl)
-          throw new Error("Failed to fetch image");
         if (!favoriteResponse.ok)
           throw new Error("Failed to fetch favorite status");
-
         const { product, supplier } = await productResponse.json();
         const { favorite } = await favoriteResponse.json();
 
         setProduct(product);
         setSupplier(supplier);
-        setImageUrl(imageData.publicUrl);
         setFavoritedItem(favorite);
-
         if (supplier?.businessLocation) {
           const locationResponse = await fetch(`/api/supplier/location`, {
             method: "POST",
@@ -76,7 +65,6 @@ export default function ProductInformationCard({ userId }: { userId: string }) {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [id, userId]);
 
@@ -137,7 +125,7 @@ export default function ProductInformationCard({ userId }: { userId: string }) {
               </Button>
               <div className="relative aspect-square overflow-hidden rounded-lg bg-rawmats-secondary-100">
                 <Image
-                  src={imageError ? "/products/default.jpg" : imageUrl}
+                  src={imageError ? "/products/default.jpg" : product.image}
                   alt={product.name}
                   layout="fill"
                   objectFit="cover"

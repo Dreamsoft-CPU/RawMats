@@ -9,7 +9,7 @@ import "keen-slider/keen-slider.min.css";
 interface Album {
   id: string;
   name: string;
-  favorites: Array<{ product: { id: string; name: string } }>;
+  favorites: Array<{ product: { id: string; name: string; image: string } }>;
 }
 
 interface AlbumCarouselProps {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Sheet,
@@ -7,7 +8,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +44,7 @@ interface SheetMenuProps {
 export function SheetMenu({ user, supplier }: SheetMenuProps) {
   const router = useRouter();
   const isSupplier = !!supplier;
-  console.log(supplier);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   const logoutUser = async () => {
     try {
@@ -61,7 +74,10 @@ export function SheetMenu({ user, supplier }: SheetMenuProps) {
           <span className="sr-only">Open menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[300px] sm:w-[400px]">
+      <SheetContent
+        side="left"
+        className="w-[300px] sm:w-[400px] flex flex-col"
+      >
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
@@ -85,7 +101,7 @@ export function SheetMenu({ user, supplier }: SheetMenuProps) {
             </div>
           </div>
         </div>
-        <nav className="space-y-4 mt-4">
+        <nav className="space-y-4 mt-4 flex-grow">
           <Button
             variant="ghost"
             className="w-full justify-start"
@@ -131,15 +147,36 @@ export function SheetMenu({ user, supplier }: SheetMenuProps) {
             <Flag className="mr-2" />
             Report an Issue
           </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            onClick={logoutUser}
-          >
-            <LogOut className="mr-2" />
-            Logout
-          </Button>
         </nav>
+        <SheetFooter>
+          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-100"
+              >
+                <LogOut className="mr-2" />
+                Logout
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you want to log out?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  You will be redirected to the login page.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={logoutUser}>
+                  Log out
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

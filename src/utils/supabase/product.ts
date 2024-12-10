@@ -15,7 +15,11 @@ export async function uploadProductImage(file: File, fileName: string) {
       throw new Error(error.message);
     }
 
-    return data.path;
+    const { data: image } = await supabase.storage
+      .from("photos")
+      .getPublicUrl(data.path);
+
+    return image.publicUrl;
   } catch (error) {
     console.error("Error uploading product image:", error);
     throw error;

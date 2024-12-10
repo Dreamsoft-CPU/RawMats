@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,13 +16,12 @@ const ProductPreviewCard: React.FC<ProductPreview> = ({
   name,
   supplier,
   price,
+  image,
 }) => {
   const router = useRouter();
-  const [imageUrl, setImageUrl] = useState<string>("/products/default.jpg");
   const [loading, setLoading] = useState<boolean>(true);
   const [locationName, setLocationName] = useState<string>("");
   const [favoritedItem, setFavoritedItem] = useState<Favorite | null>(null);
-  const [imageError, setImageError] = useState<boolean>(false);
 
   const handleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,9 +30,7 @@ const ProductPreviewCard: React.FC<ProductPreview> = ({
         method: favoritedItem ? "DELETE" : "POST",
         body: JSON.stringify({ favorite: favoritedItem }),
       });
-
       if (!response.ok) throw new Error("Failed to update favorite");
-
       const { favorite } = await response.json();
       setFavoritedItem(favorite);
     } catch (error) {
@@ -43,40 +39,31 @@ const ProductPreviewCard: React.FC<ProductPreview> = ({
   };
 
   useEffect(() => {
+    console.log(image);
     const fetchData = async () => {
       try {
-        const [imageResponse, favoriteResponse, locationResponse] =
-          await Promise.all([
-            fetch(`/api/product/${id}/image`, { next: { revalidate: 3600 } }),
-            fetch(`/api/product/${id}/favorite/${userId}`),
-            fetch(`/api/supplier/location`, {
-              method: "POST",
-              body: JSON.stringify({ locationLink: supplier.businessLocation }),
-            }),
-          ]);
-
-        if (!imageResponse.ok) throw new Error("Failed to fetch image");
+        const [favoriteResponse, locationResponse] = await Promise.all([
+          fetch(`/api/product/${id}/favorite/${userId}`),
+          fetch(`/api/supplier/location`, {
+            method: "POST",
+            body: JSON.stringify({ locationLink: supplier.businessLocation }),
+          }),
+        ]);
         if (!favoriteResponse.ok)
           throw new Error("Failed to fetch favorite status");
         if (!locationResponse.ok) throw new Error("Failed to fetch location");
-
-        const imageData = await imageResponse.json();
         const { favorite } = await favoriteResponse.json();
         const { locationName } = await locationResponse.json();
-
-        setImageUrl(imageData.publicUrl || "/products/default.jpg");
         setFavoritedItem(favorite);
         setLocationName(locationName || supplier.businessLocation);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setImageError(true);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
-  }, [id, userId, supplier.businessLocation]);
+  }, [id, userId, supplier.businessLocation, image]);
 
   const handleCardClick = () => {
     router.push(`/product/${id}`);
@@ -92,12 +79,11 @@ const ProductPreviewCard: React.FC<ProductPreview> = ({
           <Skeleton className="h-full w-full" />
         ) : (
           <Image
-            src={imageError ? "/products/default.jpg" : imageUrl}
+            src={image}
             alt={name}
             layout="fill"
             objectFit="cover"
             loading="lazy"
-            onError={() => setImageError(true)}
           />
         )}
       </div>

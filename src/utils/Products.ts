@@ -14,6 +14,7 @@ export interface ProductPreview {
   id: string;
   name: string;
   price: number;
+  image: string;
   supplier: {
     businessName: string;
     businessLocation: string;

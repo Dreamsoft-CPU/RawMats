@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -23,31 +24,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AddToAlbumDialog } from "@/components/Albums/AddToAlbumDialog";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
 
-interface Album {
-  id: string;
-  name: string;
+interface AlbumProductCardProps extends ProductPreview {
+  albumId: string;
 }
 
-interface FavoritePreviewCardProps extends ProductPreview {
-  albums: Album[];
-}
-
-const FavoritePreviewCard: React.FC<FavoritePreviewCardProps> = ({
+const AlbumProductCard: React.FC<AlbumProductCardProps> = ({
   userId,
   id,
   name,
   supplier,
   price,
-  albums,
   image,
+  albumId,
 }) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(true);
   const [locationName, setLocationName] = useState<string>("");
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertType, setAlertType] = useState<"favorite" | "album">("favorite");
   const [imageError, setImageError] = useState<boolean>(false);
 
   useEffect(() => {
@@ -59,9 +56,15 @@ const FavoritePreviewCard: React.FC<FavoritePreviewCardProps> = ({
         });
         if (!locationResponse.ok) throw new Error("Failed to fetch location");
         const { locationName } = await locationResponse.json();
+
         setLocationName(locationName || supplier.businessLocation);
       } catch (error) {
         console.error("Error fetching data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch location data",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
@@ -70,18 +73,40 @@ const FavoritePreviewCard: React.FC<FavoritePreviewCardProps> = ({
   }, [supplier.businessLocation]);
 
   const handleRemoveFavorite = async () => {
+    setAlertType("favorite");
     setIsAlertOpen(true);
   };
 
-  const confirmRemoveFavorite = async () => {
+  const handleRemoveFromAlbum = async () => {
+    setAlertType("album");
+    setIsAlertOpen(true);
+  };
+
+  const confirmRemove = async () => {
     try {
-      const response = await fetch(`/api/product/${id}/favorite/${userId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to remove favorite");
+      if (alertType === "favorite") {
+        const response = await fetch(`/api/product/${id}/favorite/${userId}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) throw new Error("Failed to remove favorite");
+      } else {
+        const response = await fetch(`/api/albums/${albumId}/product/${id}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) throw new Error("Failed to remove from album");
+      }
       router.refresh();
+      toast({
+        title: "Success",
+        description: `Product removed from ${alertType === "favorite" ? "favorites" : "album"}`,
+      });
     } catch (error) {
-      console.error("Error removing favorite:", error);
+      console.error(`Error removing ${alertType}:`, error);
+      toast({
+        title: "Error",
+        description: `Failed to remove product from ${alertType === "favorite" ? "favorites" : "album"}`,
+        variant: "destructive",
+      });
     } finally {
       setIsAlertOpen(false);
     }
@@ -93,7 +118,7 @@ const FavoritePreviewCard: React.FC<FavoritePreviewCardProps> = ({
 
   return (
     <Card
-      className="w-full max-w-md overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
+      className="w-full overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
       onClick={handleCardClick}
     >
       <div className="relative h-48 w-full overflow-hidden bg-gray-100">
@@ -149,14 +174,14 @@ const FavoritePreviewCard: React.FC<FavoritePreviewCardProps> = ({
                       Are you absolutely sure?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will remove the item from your favorites. This action
-                      cannot be undone.
+                      This will remove the item from your favorites and all
+                      albums. This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={confirmRemoveFavorite}
+                      onClick={confirmRemove}
                       className="bg-rawmats-primary-500 text-white hover:bg-rawmats-primary-700"
                     >
                       Remove
@@ -164,11 +189,35 @@ const FavoritePreviewCard: React.FC<FavoritePreviewCardProps> = ({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <AddToAlbumDialog
-                userId={userId}
-                productId={id}
-                albums={albums}
-              />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={handleRemoveFromAlbum}
+                  >
+                    Remove from Album
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove from Album</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will remove the item from this album. This action
+                      cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={confirmRemove}
+                      className="bg-rawmats-primary-500 text-white hover:bg-rawmats-primary-700"
+                    >
+                      Remove
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </PopoverContent>
           </Popover>
         </div>
@@ -192,4 +241,4 @@ const FavoritePreviewCard: React.FC<FavoritePreviewCardProps> = ({
   );
 };
 
-export default FavoritePreviewCard;
+export default AlbumProductCard;

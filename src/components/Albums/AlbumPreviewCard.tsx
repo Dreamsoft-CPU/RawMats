@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +9,7 @@ import { Button } from "@/components/ui/button";
 interface AlbumPreviewCardProps {
   id: string;
   name: string;
-  favorites: Array<{ product: { id: string; name: string } }>;
+  favorites: Array<{ product: { id: string; name: string; image: string } }>;
 }
 
 const AlbumPreviewCard: React.FC<AlbumPreviewCardProps> = ({
@@ -18,40 +17,9 @@ const AlbumPreviewCard: React.FC<AlbumPreviewCardProps> = ({
   name,
   favorites,
 }) => {
-  const [imageUrls, setImageUrls] = useState<{ [key: string]: string }>({});
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>(
     {},
   );
-
-  useEffect(() => {
-    const fetchImageUrls = async () => {
-      const urls: { [key: string]: string } = {};
-      const errors: { [key: string]: boolean } = {};
-      for (const favorite of favorites.slice(0, 3)) {
-        try {
-          const response = await fetch(
-            `/api/product/${favorite.product.id}/image`,
-          );
-          if (response.ok) {
-            const data = await response.json();
-            urls[favorite.product.id] = data.publicUrl;
-          } else {
-            errors[favorite.product.id] = true;
-          }
-        } catch (error) {
-          console.error(
-            `Error fetching image for product ${favorite.product.id}:`,
-            error,
-          );
-          errors[favorite.product.id] = true;
-        }
-      }
-      setImageUrls(urls);
-      setImageErrors(errors);
-    };
-
-    fetchImageUrls();
-  }, [favorites]);
 
   return (
     <Card className="w-full max-w-md overflow-hidden transition-shadow hover:shadow-md">
@@ -65,9 +33,9 @@ const AlbumPreviewCard: React.FC<AlbumPreviewCardProps> = ({
               key={product.id}
               className="relative aspect-square overflow-hidden rounded bg-gray-200"
             >
-              {imageUrls[product.id] && !imageErrors[product.id] ? (
+              {!imageErrors[product.id] ? (
                 <Image
-                  src={imageUrls[product.id]}
+                  src={product.image}
                   alt={product.name}
                   layout="fill"
                   objectFit="cover"
@@ -94,9 +62,13 @@ const AlbumPreviewCard: React.FC<AlbumPreviewCardProps> = ({
           <span className="text-sm text-gray-500">
             {favorites.length} item{favorites.length !== 1 ? "s" : ""}
           </span>
-          <Button variant="outline" asChild>
-            <Link href={`/album/${id}`}>View Album</Link>
-          </Button>
+          <div>
+            <Link href={`/album/${id}`}>
+              <Button variant="outline" asChild>
+                <h1>View Album</h1>
+              </Button>
+            </Link>
+          </div>
         </div>
       </CardContent>
     </Card>

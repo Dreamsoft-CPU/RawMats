@@ -36,7 +36,7 @@ export default function ProductListingForm({
 
       if (image) {
         const fileName = `${supplierId}-${productName}-${Date.now()}`;
-        imagePath = "/" + (await uploadProductImage(image, fileName));
+        imagePath = await uploadProductImage(image, fileName);
       }
 
       const fullDescription = `Packaging: ${packaging}\nStocks: ${stocks}\nDescription: ${longDescription}`;

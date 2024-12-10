@@ -40,6 +40,7 @@ export default async function Home({
     include: { supplier: true },
     where: { verified: true },
     orderBy: { dateAdded: "desc" },
+    where: { verified: true },
   });
 
   const dailyDiscoverProducts = allProducts.slice(0, 8);
@@ -73,6 +74,7 @@ export default async function Home({
                 name={product.name}
                 price={product.price}
                 supplier={product.supplier}
+                image={product.image}
               />
             ))}
           </div>
@@ -90,6 +92,7 @@ export default async function Home({
                 name={product.name}
                 price={product.price}
                 supplier={product.supplier}
+                image={product.image}
               />
             ))}
           </div>
