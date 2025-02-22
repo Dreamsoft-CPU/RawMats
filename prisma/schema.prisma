@@ -15,18 +15,20 @@ datasource db {
 }
 
 model User {
-  id             String         @id @default(cuid())
-  email          String         @unique
-  displayName    String
-  profilePicture String         @default("/users/default.jpg")
-  phoneNumber    String         @default("None")
-  role           Role           @default(USER)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  supplier       Supplier? // Optional because not every user is a supplier
-  favorites      Favorite[] // One user can have many favorites
-  albums         Album[] // One user can have many albums
-  notifications  Notification[]
+  id                  String                @id @default(cuid())
+  email               String                @unique
+  displayName         String
+  profilePicture      String                @default("/users/default.jpg")
+  phoneNumber         String                @default("None")
+  role                Role                  @default(USER)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  Supplier            Supplier[]
+  Favorite            Favorite[]
+  Album               Album[]
+  Notification        Notification[]
+  ConversationMembers ConversationMembers[]
+  Message             Message[]
 }
 
 enum Role {
@@ -36,16 +38,27 @@ enum Role {
 
 model Supplier {
   id               String    @id @default(cuid())
-  userId           String    @unique // One-to-one with User
+  userId           String    @unique
   user             User      @relation(fields: [userId], references: [id])
   businessPicture  String    @default("/businesses/default.jpg")
-  businessName     String    @unique
+  businessName     String
   businessLocation String
   businessPhone    String    @default("None")
   bio              String    @default("None")
   verified         Boolean   @default(false)
   verifiedDate     DateTime  @updatedAt
-  products         Product[]
+  Product          Product[]
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  Album     Album?   @relation(fields: [albumId], references: [id])
+  albumId   String?
 }
 
 model Product {
@@ -59,19 +72,9 @@ model Product {
   verified     Boolean    @default(false)
   verifiedDate DateTime   @updatedAt
   supplier     Supplier   @relation(fields: [supplierId], references: [id])
-  favorites    Favorite[] // One product can have many favorites
-}
-
-model Favorite {
-  id        String   @id @default(cuid())
-  userId    String
-  productId String
-  createdAt DateTime @default(now()) // Track when the item was favorited
-  user      User     @relation(fields: [userId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
-  albums    Album[] // A favorite can be in multiple albums
-
-  @@unique([userId, productId]) // Ensure a user can't favorite the same product twice
+  favorites    Favorite[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model Album {
@@ -80,8 +83,9 @@ model Album {
   description String
   userId      String
   createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   user        User       @relation(fields: [userId], references: [id])
-  favorites   Favorite[] // An album can contain many favorites
+  favorites   Favorite[]
 }
 
 model Notification {
@@ -92,4 +96,33 @@ model Notification {
   createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model Conversation {
+  id        String                @id @default(cuid())
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  messages  Message[]
+  members   ConversationMembers[]
+}
+
+model ConversationMembers {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
 }
