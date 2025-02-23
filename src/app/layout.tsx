@@ -1,6 +1,7 @@
 import { Roboto } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],

@@ -11,32 +11,39 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { RegisterFormData, RegisterSchema } from "@/lib/types/register.type";
-import Link from "next/link";
+import {
+  SupplierRegistrationFormData,
+  SupplierRegistrationFormSchema,
+} from "@/lib/types/supplierRegistration.type";
+import FileUploadWithPreview from "./FileUploadWithPreview";
+import MapDialog from "./MapDialog";
 
-export function RegisterForm({
+export function SupplierRegistrationForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [confirmEmailSent, setConfirmEmailSent] = useState(false);
+  const [registrationSent, setRegistrationSent] = useState(false);
 
-  const form = useForm<RegisterFormData>({
-    resolver: zodResolver(RegisterSchema),
+  const form = useForm<SupplierRegistrationFormData>({
+    resolver: zodResolver(SupplierRegistrationFormSchema),
     defaultValues: {
-      email: "",
-      displayName: "",
-      phoneNumber: "",
-      password: "",
+      businessName: "",
+      businessLocation: "",
+      businessPhone: "",
+      businessDocuments: [],
     },
   });
+
+  const handleLocationSelect = (location: string) => {
+    form.setValue("businessLocation", location);
+  };
 
   const showErrorMessage = (message: string) => {
     setErrorMessage(message);
@@ -45,12 +52,22 @@ export function RegisterForm({
     }, 5000);
   };
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (data: SupplierRegistrationFormData) => {
     try {
       setLoading(true);
-      const response = await fetch("/api/register", {
+      const formData = new FormData();
+      formData.append("businessName", data.businessName);
+      formData.append("businessLocation", data.businessLocation);
+      formData.append("businessPhone", data.businessPhone);
+
+      // Append each file in the businessDocuments array
+      data.businessDocuments.forEach((file) => {
+        formData.append("businessDocuments", file);
+      });
+
+      const response = await fetch("/api/supplier/apply", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -58,7 +75,7 @@ export function RegisterForm({
         if (message) showErrorMessage(message);
         else showErrorMessage("An unexpected error occured");
       } else {
-        setConfirmEmailSent(true);
+        setRegistrationSent(true);
       }
 
       setLoading(false);
@@ -74,17 +91,13 @@ export function RegisterForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden">
         <CardContent className="grid p-0 md:grid-cols-2">
-          {confirmEmailSent ? (
+          {registrationSent ? (
             <Fragment>
               <div className="flex items-center justify-center py-64 flex-col gap-6">
-                <div className="font-bold text-xl">Registration Completed</div>
+                <div className="font-bold text-xl">Applied as a Supplier</div>
                 <div className="flex items-center flex-col text-sm gap-2">
-                  Check your email to confirm your registration!
-                  <div>
-                    <Button>
-                      <Link href="/login">Go to Home</Link>
-                    </Button>
-                  </div>
+                  Check your notifications from time to time if you have been
+                  verified!
                 </div>
               </div>
             </Fragment>
@@ -97,22 +110,22 @@ export function RegisterForm({
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-col items-center text-center">
-                      <h1 className="text-2xl font-bold">Join the Community</h1>
+                      <h1 className="text-2xl font-bold">Post on RawMats</h1>
                       <p className="text-balance text-muted-foreground">
-                        Register a new RawMats account
+                        Apply to be a Supplier on the Platform
                       </p>
                     </div>
                     <div className="grid gap-2">
                       <FormField
                         control={form.control}
-                        name="email"
+                        name="businessName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>Business Name</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="rawmats@example.com"
+                                placeholder="Raw Materials and Foods"
                               />
                             </FormControl>
                             <FormMessage />
@@ -123,46 +136,14 @@ export function RegisterForm({
                     <div className="grid gap-2">
                       <FormField
                         control={form.control}
-                        name="displayName"
+                        name="businessPhone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="AJ Aparicio" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <FormField
-                        control={form.control}
-                        name="phoneNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="09XXXXXXXXX" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-
+                            <FormLabel>Business Phone</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
-                                type="password"
-                                placeholder="*******"
+                                placeholder="(XXX) XXX-XXXX or (63) XXX-XXX-XXXX"
                               />
                             </FormControl>
                             <FormMessage />
@@ -173,23 +154,29 @@ export function RegisterForm({
                     <div className="grid gap-2">
                       <FormField
                         control={form.control}
-                        name="confirmPassword"
+                        name="businessLocation"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-
+                            <FormLabel>Business Location</FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                type="password"
-                                placeholder="*******"
-                              />
+                              <div className="flex w-full items-center space-x-2">
+                                <Input readOnly {...field} />
+                                <MapDialog
+                                  onConfirmLocation={handleLocationSelect}
+                                />
+                              </div>
                             </FormControl>
-                            <FormDescription>
-                              Enter your password again
-                            </FormDescription>
                             <FormMessage />
                           </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <FormField
+                        control={form.control}
+                        name="businessDocuments"
+                        render={({ field }) => (
+                          <FileUploadWithPreview field={field} />
                         )}
                       />
                     </div>
@@ -198,17 +185,6 @@ export function RegisterForm({
                     </Button>
                     <div className="text-feedback-error flex items-center justify-center">
                       {!!errorMessage && errorMessage}
-                    </div>
-                    <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                      <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                        Or
-                      </span>
-                    </div>
-                    <div className="text-center text-sm">
-                      You already have an account{" "}
-                      <a href="#" className="underline underline-offset-4">
-                        <Link href="/login">Sign in</Link>
-                      </a>
                     </div>
                   </div>
                 </form>

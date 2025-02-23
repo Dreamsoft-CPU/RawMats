@@ -55,10 +55,11 @@ export function LoginForm({
         const { message } = await response.json();
         if (message) showErrorMessage(message);
         else showErrorMessage("An unexpected error occured");
+      } else {
+        router.push("/");
       }
 
       setLoading(false);
-      router.push("/");
     } catch (e) {
       setLoading(false);
       const message =

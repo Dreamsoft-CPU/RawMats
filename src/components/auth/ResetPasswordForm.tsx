@@ -57,10 +57,11 @@ export function ResetPasswordForm({
         const { message } = await response.json();
         if (message) showErrorMessage(message);
         else showErrorMessage("An unexpected error occured");
+      } else {
+        setPasswordResetSuccess(true);
       }
 
       setLoading(false);
-      setPasswordResetSuccess(true);
     } catch (e) {
       setLoading(false);
       const message =
