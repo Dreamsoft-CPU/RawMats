@@ -37,17 +37,18 @@ enum Role {
 }
 
 model Supplier {
-  id               String    @id @default(cuid())
-  userId           String    @unique
-  user             User      @relation(fields: [userId], references: [id])
-  businessPicture  String    @default("/businesses/default.jpg")
-  businessName     String
-  businessLocation String
-  businessPhone    String    @default("None")
-  bio              String    @default("None")
-  verified         Boolean   @default(false)
-  verifiedDate     DateTime  @updatedAt
-  Product          Product[]
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id])
+  businessPicture   String    @default("/businesses/default.jpg")
+  businessName      String
+  businessLocation  String
+  businessPhone     String    @default("None")
+  businessDocuments String[]
+  bio               String    @default("None")
+  verified          Boolean   @default(false)
+  verifiedDate      DateTime  @updatedAt
+  Product           Product[]
 }
 
 model Favorite {
