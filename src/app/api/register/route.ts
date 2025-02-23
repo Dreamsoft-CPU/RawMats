@@ -17,7 +17,7 @@ export const POST = async (request: NextRequest) => {
       throw new Error(userError?.message);
     }
 
-    const databaseUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         id: userData.user.id,
         email: data.email,
@@ -26,7 +26,7 @@ export const POST = async (request: NextRequest) => {
       },
     });
 
-    return NextResponse.json({ user: databaseUser }, { status: 201 });
+    return NextResponse.json({ status: 204 });
   } catch (e) {
     const message =
       e instanceof Error ? e.message : "An unexpected error occured";

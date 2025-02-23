@@ -17,8 +17,15 @@ export const POST = async (request: NextRequest) => {
       throw new Error(userError?.message);
     }
 
-    return NextResponse.json({ user: userData }, { status: 200 });
+    if (!userData.user) {
+      throw new Error("User does not exist!");
+    }
+
+    const currentUrl = request.nextUrl.clone();
+    currentUrl.pathname = "/";
+    return NextResponse.json({ status: 204 });
   } catch (e) {
+    console.log(e);
     const message =
       e instanceof Error ? e.message : "An unexpected error occured";
     return NextResponse.json(

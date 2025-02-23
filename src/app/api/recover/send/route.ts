@@ -15,6 +15,7 @@ export const POST = async (request: NextRequest) => {
 
     return NextResponse.json({ status: 204 });
   } catch (e) {
+    console.log(e);
     const message =
       e instanceof Error ? e.message : "An unexpected error occured";
     return NextResponse.json(
