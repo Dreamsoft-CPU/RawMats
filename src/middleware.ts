@@ -1,8 +1,9 @@
 import { type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  console.log("Request path:", request.nextUrl.pathname);
-  return request;
+  // console.log(request);
+  // updateMiddleware();
+  console.log("test request", request.nextUrl.pathname);
 }
 
 export const config = {
