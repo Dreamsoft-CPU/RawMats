@@ -2,6 +2,7 @@ import { Roboto } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -21,7 +22,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${roboto.className}`}>{children}</body>
+      <body className={`${roboto.className}`}>
+        <SidebarProvider>{children}</SidebarProvider>
+      </body>
     </html>
   );
 }
