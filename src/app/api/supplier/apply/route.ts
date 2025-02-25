@@ -3,6 +3,7 @@ import prisma from "@/utils/prisma";
 import { getUserData } from "@/utils/server/getUserData";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 
 export const POST = async (request: NextRequest) => {
   const supabase = await createClient();
@@ -33,15 +34,29 @@ export const POST = async (request: NextRequest) => {
     if (!("error" in user)) {
       const uploadedFilePaths: string[] = [];
 
-      // Upload files with unique names to prevent conflicts
       for (const file of files) {
         const fileBuffer = await file.arrayBuffer();
-        const fileName = `${user.id}/${Date.now()}-${file.name}`;
+        let processedBuffer = Buffer.from(fileBuffer);
+
+        if (file.type.startsWith("image/")) {
+          processedBuffer = await sharp(processedBuffer)
+            .jpeg({ quality: 80 })
+            .toBuffer();
+        }
+
+        const fileExtension = file.type.startsWith("image/")
+          ? "jpg"
+          : file.name.split(".").pop();
+        const fileName = `${user.id}/${Date.now()}-${file.name.split(".")[0]}.${fileExtension}`;
+
+        const contentType = file.type.startsWith("image/")
+          ? "image/jpeg"
+          : file.type;
 
         const { data: fileData, error: fileError } = await supabase.storage
           .from("private")
-          .upload(fileName, fileBuffer, {
-            contentType: file.type,
+          .upload(fileName, processedBuffer, {
+            contentType,
             upsert: false,
           });
 

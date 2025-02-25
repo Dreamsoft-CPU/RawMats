@@ -16,6 +16,13 @@ export const getDbUser = async () => {
       where: {
         email: data.user.email,
       },
+      include: {
+        Supplier: {
+          include: {
+            Product: true,
+          },
+        },
+      },
     });
 
     if (!databaseUser) {

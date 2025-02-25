@@ -1,6 +1,7 @@
 import HomeSidebar from "@/components/home/HomeSidebar";
 import ProductCard from "@/components/products/ProductCard";
 import HomeInset from "@/components/sidebar/insets/HomeInset";
+import prisma from "@/utils/prisma";
 import { getDbUser } from "@/utils/server/getDbUser";
 import { getSidebarData } from "@/utils/server/getSidebarData";
 
@@ -14,27 +15,35 @@ const HomePage = async () => {
     throw new Error(user.message);
   }
 
-  const sampleCard = {
-    id: "nigga",
-    name: "Product Name",
-    image: "https://i.ytimg.com/vi/zCHdvXqYOrA/maxresdefault.jpg",
-    price: 100.0,
-    favorite: [
-      {
-        userId: "6a48f46c-53fd-40a6-982b-3623dc0cbda5",
-      },
-    ],
-    userId: user.id,
-    supplier: {
-      businessName: "Supplier Name",
+  const products = await prisma.product.findMany({
+    where: {
+      supplierId: user.Supplier[0].id,
     },
-  };
+    include: {
+      favorites: true,
+    },
+  });
 
   return (
     <div className="flex h-screen w-full">
       <HomeSidebar data={sidebarData} />
       <HomeInset>
-        <ProductCard data={sampleCard} />
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            data={{
+              id: product.id,
+              name: product.name,
+              image: product.image,
+              price: product.price,
+              userId: user.id,
+              favorite: product.favorites,
+              supplier: {
+                businessName: user.Supplier[0].businessName,
+              },
+            }}
+          />
+        ))}
       </HomeInset>
     </div>
   );
