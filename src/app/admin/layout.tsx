@@ -22,9 +22,9 @@ export default async function AdminLayout({
     },
   });
 
-  if (userData.role !== "ADMIN") {
+  if (userData?.role !== "ADMIN") {
     redirect("/");
   }
 
-  return <section>{children}</section>;
+  return <section className={`w-full h-screen`}>{children}</section>;
 }

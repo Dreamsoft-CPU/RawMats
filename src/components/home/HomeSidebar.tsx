@@ -45,7 +45,7 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({
   if (!isSupplierPending && !isSupplier) {
     homeSidebarData.push({
       title: "Apply as a Supplier",
-      url: "/supplier/apply",
+      url: "/apply",
       icon: PackageSearch,
     });
   }

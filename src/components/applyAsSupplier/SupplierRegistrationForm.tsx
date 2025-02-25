@@ -22,6 +22,7 @@ import {
 } from "@/lib/types/supplierRegistration.type";
 import FileUploadWithPreview from "./FileUploadWithPreview";
 import MapDialog from "./MapDialog";
+import { useRouter } from "next/navigation";
 
 export function SupplierRegistrationForm({
   className,
@@ -30,6 +31,7 @@ export function SupplierRegistrationForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [registrationSent, setRegistrationSent] = useState(false);
+  const router = useRouter();
 
   const form = useForm<SupplierRegistrationFormData>({
     resolver: zodResolver(SupplierRegistrationFormSchema),
@@ -93,11 +95,14 @@ export function SupplierRegistrationForm({
         <CardContent className="grid p-0 md:grid-cols-2">
           {registrationSent ? (
             <Fragment>
-              <div className="flex items-center justify-center py-64 flex-col gap-6">
+              <div className="flex items-center justify-center py-64 flex-col gap-6 px-12">
                 <div className="font-bold text-xl">Applied as a Supplier</div>
                 <div className="flex items-center flex-col text-sm gap-2">
-                  Check your notifications from time to time if you have been
-                  verified!
+                  <p>Check your notifications from time to time</p>
+                  <p>if you have been verified!</p>
+                  <Button onClick={() => router.push("/")}>
+                    Go back to Home
+                  </Button>
                 </div>
               </div>
             </Fragment>

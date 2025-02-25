@@ -26,5 +26,5 @@ export default async function SupplierLayout({
     redirect("/");
   }
 
-  return <section>{children}</section>;
+  return <section className={`w-full h-screen`}>{children}</section>;
 }
