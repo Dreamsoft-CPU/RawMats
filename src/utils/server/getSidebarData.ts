@@ -25,11 +25,21 @@ export const getSidebarData = async () => {
     if (!userData) throw new Error("User not found!");
 
     const userIsAdmin = userData.role === "ADMIN";
-    const userIsSupplier = userData.Supplier[0] !== null;
+    const userSupplierRecord = userData.Supplier[0];
+    let userIsSupplier: boolean = false;
+    let userIsSupplierPending: boolean = false;
+
+    if (!!userSupplierRecord) {
+      userIsSupplier =
+        userSupplierRecord && userSupplierRecord.verified === true;
+      userIsSupplierPending =
+        userSupplierRecord && userSupplierRecord.verified === false;
+    }
 
     return {
       isSupplier: userIsSupplier,
       isAdmin: userIsAdmin,
+      isSupplierPending: userIsSupplierPending,
       user: {
         name: userData.displayName,
         email: userData.email,

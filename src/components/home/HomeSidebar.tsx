@@ -9,6 +9,7 @@ interface HomeSidebarProps {
   data: {
     isSupplier: boolean;
     isAdmin: boolean;
+    isSupplierPending: boolean;
     user: {
       name: string;
       email: string;
@@ -18,7 +19,7 @@ interface HomeSidebarProps {
 }
 
 const HomeSidebar: React.FC<HomeSidebarProps> = ({
-  data: { isSupplier, isAdmin, user },
+  data: { isSupplier, isAdmin, isSupplierPending, user },
 }) => {
   const homeSidebarData: SidebarNavItems[] = [
     {
@@ -32,13 +33,20 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({
 
   const switcherData = [];
   if (isAdmin) {
-    switcherData.push({ name: "Admin", logo: Shield, url: "/admin" });
+    switcherData.push({ name: "Admin", logo: Shield, url: "/admin/dashboard" });
   }
   if (isSupplier) {
     switcherData.push({
       name: "Supplier",
       logo: PackageSearch,
-      url: "/supplier",
+      url: "/supplier/dashboard",
+    });
+  }
+  if (!isSupplierPending && !isSupplier) {
+    homeSidebarData.push({
+      title: "Apply as a Supplier",
+      url: "/supplier/apply",
+      icon: PackageSearch,
     });
   }
 

@@ -38,13 +38,13 @@ const SupplierSidebar: React.FC<SupplierSidebarProps> = ({
 
   const switcherData = [];
   if (isAdmin) {
-    switcherData.push({ name: "Admin", logo: Shield, url: "/admin" });
+    switcherData.push({ name: "Admin", logo: Shield, url: "/admin/dashboard" });
   }
   if (isSupplier) {
     switcherData.push({
       name: "Supplier",
       logo: PackageSearch,
-      url: "/supplier",
+      url: "/supplier/dashboard",
     });
   }
 
