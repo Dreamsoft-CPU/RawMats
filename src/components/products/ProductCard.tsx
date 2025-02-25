@@ -7,19 +7,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Image from "next/image";
+import { StarFilledIcon } from "@radix-ui/react-icons";
+import { ProductCardProps } from "@/lib/interfaces/ProductCardProps";
+import FavoriteButton from "./FavoriteButton";
 
-const ProductCard = () => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  data: { id, name, image, price, supplier, favorite, userId },
+}) => {
+  const favorited = favorite.some((fav) => fav.userId === userId);
+
   return (
-    <Card>
+    <Card className="max-w-52 hover:border-primary transition-transform duration-200 hover:scale-105">
       <CardHeader>
-        <CardTitle>Card Title</CardTitle>
-        <CardDescription>Card Description</CardDescription>
+        <div className="-mx-6 -mt-6 aspect-square">
+          <Image
+            src={image}
+            alt="Product"
+            width={500}
+            height={500}
+            className="rounded-t-xl object-cover w-full h-full"
+          />
+        </div>
+        <CardTitle className="truncate flex flex-row justify-between text-lg -mx-4 items-center ">
+          {name} <FavoriteButton favorite={favorited} id={id} userId={userId} />
+        </CardTitle>
+        <CardDescription className="-mx-4">
+          {supplier.businessName || "RawMats Supplier"}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <p>Card Content</p>
+      <CardContent className="-mt-4 -mx-4">
+        <p className="text-primary font-bold text-lg">₱{price.toFixed(2)}</p>
       </CardContent>
-      <CardFooter>
-        <p>Card Footer</p>
+      <CardFooter className="-mx-4">
+        <p className="flex flex-row items-center gap-1">
+          <StarFilledIcon className="text-yellow-300" />
+          5.0
+        </p>
       </CardFooter>
     </Card>
   );

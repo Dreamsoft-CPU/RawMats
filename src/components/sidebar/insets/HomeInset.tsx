@@ -26,7 +26,7 @@ const HomeInset = ({ children }: { children: React.ReactNode }) => {
           <NotificationBell />
         </div>
       </header>
-      {children}
+      <div className="flex p-4">{children}</div>
     </SidebarInset>
   );
 };

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "sonner";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${roboto.className} w-full h-screen`}>
         <SidebarProvider>{children}</SidebarProvider>
+        <Toaster />
       </body>
     </html>
   );
