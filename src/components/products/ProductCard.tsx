@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   Card,
@@ -11,14 +12,19 @@ import Image from "next/image";
 import { StarFilledIcon } from "@radix-ui/react-icons";
 import { ProductCardProps } from "@/lib/interfaces/ProductCardProps";
 import FavoriteButton from "./FavoriteButton";
+import { useRouter } from "next/navigation";
 
 const ProductCard: React.FC<ProductCardProps> = ({
   data: { id, name, image, price, supplier, favorite, userId },
 }) => {
   const favorited = favorite.some((fav) => fav.userId === userId);
+  const router = useRouter();
 
   return (
-    <Card className="max-w-52 hover:border-primary transition-transform duration-200 hover:scale-105">
+    <Card
+      onClick={() => router.push(`/product/${id}`)}
+      className="max-w-52 hover:border-primary transition-transform duration-200 hover:scale-105"
+    >
       <CardHeader>
         <div className="-mx-6 -mt-6 aspect-square">
           <Image

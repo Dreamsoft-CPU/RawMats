@@ -1,13 +1,14 @@
 import HomeSidebar from "@/components/home/HomeSidebar";
-import ProductCard from "@/components/products/ProductCard";
+import ProductPageCard from "@/components/products/ProductPageCard";
 import HomeInset from "@/components/sidebar/insets/HomeInset";
 import prisma from "@/utils/prisma";
 import { getDbUser } from "@/utils/server/getDbUser";
 import { getSidebarData } from "@/utils/server/getSidebarData";
-
+import { redirect } from "next/navigation";
 import React from "react";
 
-const HomePage = async () => {
+const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = await params;
   const sidebarData = await getSidebarData();
   const user = await getDbUser();
 
@@ -15,9 +16,9 @@ const HomePage = async () => {
     throw new Error(user.message);
   }
 
-  const products = await prisma.product.findMany({
+  const product = await prisma.product.findUnique({
     where: {
-      verified: true,
+      id,
     },
     include: {
       favorites: {
@@ -30,27 +31,29 @@ const HomePage = async () => {
     },
   });
 
+  if (!product) {
+    redirect("/error?code=404&message=Product%20not%20found");
+  }
+
   return (
     <div className="flex h-screen w-full">
       <HomeSidebar data={sidebarData} />
       <HomeInset userData={user}>
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            data={{
-              id: product.id,
-              name: product.name,
-              image: product.image,
-              price: product.price,
-              userId: user.id,
-              favorite: product.favorites,
-              supplier: product.supplier,
-            }}
-          />
-        ))}
+        <ProductPageCard
+          data={{
+            id: product.id,
+            name: product.name,
+            image: product.image,
+            description: product.description,
+            price: product.price,
+            userId: user.id,
+            favorites: product.favorites,
+            supplier: product.supplier,
+          }}
+        />
       </HomeInset>
     </div>
   );
 };
 
-export default HomePage;
+export default ProductPage;
