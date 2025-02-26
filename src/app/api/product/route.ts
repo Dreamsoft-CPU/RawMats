@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import prisma from "@/utils/prisma";
+import { revalidatePath } from "next/cache";
 
 export const POST = async (req: NextRequest) => {
   const supabase = await createClient();
@@ -65,6 +66,9 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
+    // Revalidate paths to refresh data
+    revalidatePath("/supplier/products");
+    revalidatePath("/api/product");
     return NextResponse.json({ product }, { status: 201 });
   } catch (e) {
     const message = e instanceof Error ? e.message : "An error occurred";
@@ -138,6 +142,8 @@ export const PUT = async (req: NextRequest) => {
       data: updateData,
     });
 
+    revalidatePath("/supplier/products");
+    revalidatePath("/api/product");
     return NextResponse.json({ product }, { status: 200 });
   } catch (e) {
     const message = e instanceof Error ? e.message : "An error occurred";
@@ -145,17 +151,16 @@ export const PUT = async (req: NextRequest) => {
   }
 };
 
-export const DELETE = async (
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) => {
+export const DELETE = async (req: NextRequest) => {
   try {
-    const { id } = await params;
+    const { id } = await req.json();
 
     await prisma.product.delete({
       where: { id },
     });
 
+    revalidatePath("/supplier/products");
+    revalidatePath("/api/product");
     return NextResponse.json({ status: 204 });
   } catch (e) {
     const message = e instanceof Error ? e.message : "An error occurred";

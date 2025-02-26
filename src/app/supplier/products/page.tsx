@@ -1,6 +1,7 @@
 import SupplierSidebar from "@/components/home/SupplierSidebar";
 import SupplierInset from "@/components/sidebar/insets/SupplierInset";
-import CreateProductForm from "@/components/supplier/products/CreateProductForm";
+import ProductList from "@/components/supplier/products/ProductList";
+import ProductStatusCards from "@/components/supplier/products/ProductStatusCards";
 import { getDbUser } from "@/utils/server/getDbUser";
 import { getSidebarData } from "@/utils/server/getSidebarData";
 import React from "react";
@@ -17,7 +18,10 @@ const SupplierProducts = async () => {
     <div className="flex h-screen w-full">
       <SupplierSidebar data={sidebarData} />
       <SupplierInset>
-        <CreateProductForm supplierId={userData.Supplier[0].id} />
+        <div className="flex flex-col w-full gap-4">
+          <ProductStatusCards userData={userData} />
+          <ProductList userData={userData} />
+        </div>
       </SupplierInset>
     </div>
   );

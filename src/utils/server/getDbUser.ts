@@ -19,7 +19,11 @@ export const getDbUser = async () => {
       include: {
         Supplier: {
           include: {
-            Product: true,
+            Product: {
+              include: {
+                favorites: true,
+              },
+            },
           },
         },
       },

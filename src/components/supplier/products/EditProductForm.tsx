@@ -4,10 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import {
-  ProductFormData,
-  ProductFormDataSchema,
-} from "@/lib/types/createProduct.type";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -27,19 +23,44 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import ImageCropper from "@/components/images/ImageCropper";
 import { toast } from "sonner";
+import {
+  EditProductFormData,
+  EditProductFormDataSchema,
+} from "@/lib/types/editProduct.type";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
+interface EditProductFormProps {
+  productId: string;
+  supplierId: string;
+  initialData: Omit<EditProductFormData, "image"> & { imageUrl?: string };
+}
+
+const EditProductForm = ({
+  productId,
+  supplierId,
+  initialData,
+}: EditProductFormProps) => {
   const [open, setOpen] = useState(false);
   const [showImageCropper, setShowImageCropper] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<ProductFormData>({
-    resolver: zodResolver(ProductFormDataSchema),
+  const form = useForm<EditProductFormData>({
+    resolver: zodResolver(EditProductFormDataSchema),
     defaultValues: {
-      name: "",
-      price: 0,
-      description: "",
+      name: initialData.name,
+      price: initialData.price,
+      description: initialData.description,
       supplierId: supplierId,
     },
   });
@@ -63,38 +84,66 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
     setShowImageCropper(false);
   };
 
-  const onSubmit = async (data: ProductFormData) => {
+  const onSubmit = async (data: EditProductFormData) => {
     try {
       setIsSubmitting(true);
 
       const formData = new FormData();
-      formData.append("name", data.name);
-      formData.append("price", data.price.toString());
-      formData.append("description", data.description);
-      formData.append("supplierId", data.supplierId);
+      formData.append("id", productId);
+      formData.append("name", data.name || "");
+      formData.append("price", data.price ? data.price.toString() : "0");
+      formData.append("description", data.description || "");
+      formData.append("supplierId", data.supplierId || "");
 
       if (data.image) {
         formData.append("image", data.image);
       }
 
-      const response = await fetch("/api/product", {
-        method: "POST",
+      const response = await fetch(`/api/product/`, {
+        method: "PUT",
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create product");
+        throw new Error(errorData.message || "Failed to update product");
       }
 
       const result = await response.json();
-      console.log("Product created:", result.product);
+      console.log("Product updated:", result.product);
 
       setOpen(false);
-      form.reset();
+      toast.success("Product updated successfully");
     } catch (error) {
       const message = error instanceof Error && error.message;
-      toast.error(`An error occured in creating the product: ${message}`);
+      toast.error(`An error occurred while updating the product: ${message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch(`/api/product/`, {
+        method: "DELETE",
+        body: JSON.stringify({ id: productId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update product");
+      }
+
+      setOpen(false);
+      toast.success("Product deleted successfully");
+    } catch (error) {
+      const message = error instanceof Error && error.message;
+      toast.error(`An error occurred while updating the product: ${message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -103,11 +152,13 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Create New Product</Button>
+        <Button variant="outline" size="sm">
+          Edit Product
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Product</DialogTitle>
+          <DialogTitle>Edit Product</DialogTitle>
         </DialogHeader>
 
         {showImageCropper && selectedImage ? (
@@ -178,7 +229,7 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
                 name="image"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Image</FormLabel>
+                    <FormLabel>Product Image (Optional)</FormLabel>
                     <FormControl>
                       <div className="flex flex-col gap-2">
                         <Input
@@ -188,10 +239,10 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
                             handleImageSelect(e);
                           }}
                         />
-                        {field.value && (
+                        {field.value ? (
                           <div className="mt-2">
                             <div className="text-sm text-green-600 mb-1">
-                              Image selected
+                              New image selected
                             </div>
                             <div className="relative h-40 w-full border rounded-md overflow-hidden">
                               <Image
@@ -210,7 +261,21 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
                               />
                             </div>
                           </div>
-                        )}
+                        ) : initialData.imageUrl ? (
+                          <div className="mt-2">
+                            <div className="text-sm text-muted-foreground mb-1">
+                              Current image
+                            </div>
+                            <div className="relative h-40 w-full border rounded-md overflow-hidden">
+                              <Image
+                                src={initialData.imageUrl}
+                                alt="Current product image"
+                                fill
+                                className="object-contain"
+                              />
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -226,8 +291,36 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
                 >
                   Cancel
                 </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                      {isSubmitting ? "Deleting..." : "Delete Product"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete this product.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isSubmitting}
+                      >
+                        Continue
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Product"}
+                  {isSubmitting ? "Updating..." : "Update Product"}
                 </Button>
               </div>
             </form>
@@ -238,4 +331,4 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
   );
 };
 
-export default CreateProductForm;
+export default EditProductForm;

@@ -5,8 +5,8 @@ import CustomSidebarTrigger from "../CustomSidebarTrigger";
 
 const SupplierInset = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SidebarInset>
-      <header className="flex sticky bg-secondary-300 top-0 h-24 shrink-0 items-center gap-2 border-b px-4">
+    <SidebarInset className="w-full">
+      <header className="flex sticky bg-secondary-300 top-0 h-24 shrink-0 items-center gap-2 border-b px-4 w-full">
         <div className="flex items-center gap-2">
           <CustomSidebarTrigger />
           <Image
@@ -18,7 +18,9 @@ const SupplierInset = ({ children }: { children: React.ReactNode }) => {
           />
         </div>
       </header>
-      {children}
+      <div className="flex w-full items-center justify-center gap-2 p-4">
+        {children}
+      </div>
     </SidebarInset>
   );
 };
