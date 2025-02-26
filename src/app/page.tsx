@@ -17,17 +17,23 @@ const HomePage = async () => {
 
   const products = await prisma.product.findMany({
     where: {
-      supplierId: user.Supplier[0].id,
+      verified: true,
     },
     include: {
-      favorites: true,
+      favorites: {
+        select: {
+          id: true,
+          userId: true,
+        },
+      },
+      supplier: true,
     },
   });
 
   return (
     <div className="flex h-screen w-full">
       <HomeSidebar data={sidebarData} />
-      <HomeInset>
+      <HomeInset userData={user}>
         {products.map((product) => (
           <ProductCard
             key={product.id}
@@ -39,7 +45,7 @@ const HomePage = async () => {
               userId: user.id,
               favorite: product.favorites,
               supplier: {
-                businessName: user.Supplier[0].businessName,
+                businessName: product.supplier.businessName,
               },
             }}
           />

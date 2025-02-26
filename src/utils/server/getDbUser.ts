@@ -26,6 +26,7 @@ export const getDbUser = async () => {
             },
           },
         },
+        Notification: true,
       },
     });
 

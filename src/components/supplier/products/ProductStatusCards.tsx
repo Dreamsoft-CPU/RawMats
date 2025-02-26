@@ -20,7 +20,7 @@ const ProductStatusCards: React.FC<UserDataProps> = ({ userData }) => {
   const totalProducts = userData.Supplier[0].Product.length;
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 w-full z-50">
       {/* For desktop/larger screens */}
       <div className="hidden md:flex md:space-x-4 w-full">
         <Card className="relative border border-gray-200 shadow-lg bg-white p-6 flex-1">

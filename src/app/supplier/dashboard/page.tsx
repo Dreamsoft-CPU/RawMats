@@ -17,7 +17,7 @@ const SupplierDashboard = async () => {
   return (
     <div className="flex h-screen w-full">
       <SupplierSidebar data={sidebarData} />
-      <SupplierInset>
+      <SupplierInset userData={userData}>
         <div className="flex flex-col w-full gap-4">
           <ProductStatusCards userData={userData} />
           <FavoritesBarChart userData={userData} />

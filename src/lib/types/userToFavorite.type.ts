@@ -45,3 +45,12 @@ export const FavoriteSchema = z.object({
   productId: z.string(),
   createdAt: z.date(),
 });
+
+export const NotificationSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  title: z.string(),
+  content: z.string(),
+  read: z.boolean().default(false),
+  createdAt: z.date(),
+});

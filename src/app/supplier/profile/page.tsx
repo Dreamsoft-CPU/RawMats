@@ -16,7 +16,7 @@ const SupplierProfile = async () => {
   return (
     <div className="flex h-screen w-full">
       <SupplierSidebar data={sidebarData} />
-      <SupplierInset>
+      <SupplierInset userData={userData}>
         <ProfileCard userData={userData} />
       </SupplierInset>
     </div>

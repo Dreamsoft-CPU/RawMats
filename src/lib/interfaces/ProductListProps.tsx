@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   FavoriteSchema,
+  NotificationSchema,
   ProductSchema,
   SupplierSchema,
   UserSchema,
@@ -16,6 +17,7 @@ export const UserToFavoriteSchema = UserSchema.extend({
       ),
     }),
   ),
+  Notification: z.array(NotificationSchema),
 });
 
 export type UserDbData = z.infer<typeof UserToFavoriteSchema>;
