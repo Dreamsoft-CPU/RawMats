@@ -9,7 +9,7 @@ import { InsetProps } from "@/lib/interfaces/InsetProps";
 const HomeInset: React.FC<InsetProps> = ({ children, userData }) => {
   return (
     <SidebarInset>
-      <header className="flex sticky bg-secondary-300 top-0 h-24 shrink-0 items-center gap-2 border-b px-4">
+      <header className="flex sticky z-40 bg-secondary-300 top-0 h-24 shrink-0 items-center gap-2 border-b px-4">
         <div className="flex items-center gap-2">
           <CustomSidebarTrigger />
           <Image

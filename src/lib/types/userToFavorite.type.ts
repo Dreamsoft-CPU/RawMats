@@ -46,6 +46,16 @@ export const FavoriteSchema = z.object({
   createdAt: z.date(),
 });
 
+export const FavoriteFromPageSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  productId: z.string(),
+  createdAt: z.date(),
+  product: ProductSchema,
+});
+
+export type FavoriteFromPage = z.infer<typeof FavoriteFromPageSchema>;
+
 export const NotificationSchema = z.object({
   id: z.string(),
   userId: z.string(),
