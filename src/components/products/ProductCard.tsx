@@ -21,31 +21,35 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const router = useRouter();
 
   return (
-    <Card
-      onClick={() => router.push(`/product/${id}`)}
-      className="max-w-52 hover:border-primary transition-transform duration-200 hover:scale-105"
-    >
-      <CardHeader>
-        <div className="-mx-6 -mt-6 aspect-square">
+    <Card className="w-full max-w-52 h-[420px] hover:border-primary transition-transform duration-200 hover:scale-105">
+      <CardHeader className="p-0">
+        <div
+          onClick={() => router.push(`/product/${id}`)}
+          className="w-full h-52 overflow-hidden"
+        >
           <Image
             src={image}
-            alt="Product"
+            alt={name}
             width={500}
             height={500}
-            className="rounded-t-xl object-cover w-full h-full"
+            className="rounded-t-xl object-cover w-full h-full object-center"
+            style={{ objectFit: "cover" }}
           />
         </div>
-        <CardTitle className="truncate flex flex-row justify-between text-lg -mx-4 items-center ">
-          {name} <FavoriteButton favorite={favorited} id={id} userId={userId} />
-        </CardTitle>
-        <CardDescription className="-mx-4">
-          {supplier.businessName || "RawMats Supplier"}
-        </CardDescription>
+        <div className="p-4">
+          <CardTitle className="truncate flex flex-row justify-between text-lg items-center">
+            {name}{" "}
+            <FavoriteButton favorite={favorited} id={id} userId={userId} />
+          </CardTitle>
+          <CardDescription className="truncate">
+            {supplier.businessName || "RawMats Supplier"}
+          </CardDescription>
+        </div>
       </CardHeader>
-      <CardContent className="-mt-4 -mx-4">
+      <CardContent onClick={() => router.push(`/product/${id}`)}>
         <p className="text-primary font-bold text-lg">₱{price.toFixed(2)}</p>
       </CardContent>
-      <CardFooter className="-mx-4">
+      <CardFooter>
         <p className="flex flex-row items-center gap-1">
           <StarFilledIcon className="text-yellow-300" />
           5.0
