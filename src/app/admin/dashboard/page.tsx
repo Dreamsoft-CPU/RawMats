@@ -1,3 +1,4 @@
+import AnalyticsPage from "@/components/admin/dashboard/AnalyticsPage";
 import AdminSidebar from "@/components/home/AdminSidebar";
 import AdminInset from "@/components/sidebar/insets/AdminInset";
 import { getSidebarData } from "@/utils/server/getSidebarData";
@@ -9,7 +10,7 @@ const AdminDashboard = async () => {
     <div className="flex h-screen w-full">
       <AdminSidebar data={sidebarData} />
       <AdminInset>
-        <p></p>
+        <AnalyticsPage />
       </AdminInset>
     </div>
   );
