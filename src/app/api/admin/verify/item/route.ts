@@ -32,7 +32,7 @@ export const POST = async (request: NextRequest) => {
 
 export const DELETE = async (request: NextRequest) => {
   try {
-    const { id, userId, reason } = await request.json();
+    const { id, userId, reasons, comment } = await request.json();
 
     const product = await prisma.product.findUnique({
       where: {
@@ -56,13 +56,18 @@ export const DELETE = async (request: NextRequest) => {
     await prisma.notification.create({
       data: {
         title: "Product Rejected",
-        content: `Your product ${product.name} has been rejected due to ${reason}. Please make the necessary changes and resubmit.`,
+        content: `Your product ${product.name} has been rejected.
+        Reasons for rejection:
+        ${reasons.join(", ")}
+        Additional comments: 
+        ${comment}`,
         userId,
       },
     });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (e) {
+    console.log(e);
     const message = e instanceof Error ? e.message : "An error occurred";
     return NextResponse.json({ error: true, message }, { status: 400 });
   }

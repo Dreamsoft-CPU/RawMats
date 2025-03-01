@@ -18,6 +18,12 @@ import {
 } from "@/components/ui/popover";
 import { UserDataProps } from "@/lib/interfaces/ProductListProps";
 import { toast } from "sonner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
 
 export function NotificationPopover({ userData }: UserDataProps) {
   // State to manage notifications locally
@@ -104,9 +110,23 @@ export function NotificationPopover({ userData }: UserDataProps) {
                       )}
                     />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {notification.content}
-                      </p>
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem
+                          value={notification.id}
+                          className="border-0"
+                        >
+                          <AccordionTrigger className="py-0 hover:no-underline">
+                            <p className="text-sm font-medium leading-none text-left">
+                              {notification.content.length > 50
+                                ? `${notification.content.substring(0, 50)}...`
+                                : notification.content}
+                            </p>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <p className="text-sm">{notification.content}</p>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                       <p className="text-sm text-muted-foreground">
                         {new Date(notification.createdAt).toLocaleTimeString(
                           [],

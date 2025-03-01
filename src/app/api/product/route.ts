@@ -139,7 +139,10 @@ export const PUT = async (req: NextRequest) => {
 
     const product = await prisma.product.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...updateData,
+        verified: false,
+      },
     });
 
     revalidatePath("/supplier/products");

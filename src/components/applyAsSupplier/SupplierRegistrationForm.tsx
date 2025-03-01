@@ -90,8 +90,11 @@ export function SupplierRegistrationForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden">
+    <div
+      className={cn("flex flex-col gap-6 w-full items-center", className)}
+      {...props}
+    >
+      <Card className="overflow-hidden max-w-4xl">
         <CardContent className="grid p-0 md:grid-cols-2">
           {registrationSent ? (
             <Fragment>

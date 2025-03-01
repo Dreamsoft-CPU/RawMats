@@ -19,7 +19,7 @@ const SupplierApplication = async () => {
   }
 
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex h-screen w-full ">
       <HomeSidebar data={sidebarData} />
       <HomeInset userData={user}>
         <SupplierRegistrationForm />

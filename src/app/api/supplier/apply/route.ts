@@ -55,7 +55,7 @@ export const POST = async (request: NextRequest) => {
 
         const { data: fileData, error: fileError } = await supabase.storage
           .from("private")
-          .upload(fileName, processedBuffer, {
+          .upload(`${fileName}`, processedBuffer, {
             contentType,
             upsert: false,
           });

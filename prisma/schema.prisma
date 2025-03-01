@@ -39,7 +39,7 @@ enum Role {
 model Supplier {
   id                String    @id @default(cuid())
   userId            String    @unique
-  user              User      @relation(fields: [userId], references: [id])
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   businessPicture   String    @default("/businesses/default.jpg")
   businessName      String
   businessLocation  String
@@ -56,8 +56,8 @@ model Favorite {
   userId        String
   productId     String
   createdAt     DateTime        @default(now())
-  user          User            @relation(fields: [userId], references: [id])
-  product       Product         @relation(fields: [productId], references: [id])
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   AlbumFavorite AlbumFavorite[]
 }
 
@@ -65,9 +65,9 @@ model AlbumFavorite {
   id         String   @id @default(cuid())
   albumId    String
   favoriteId String
-  favorite   Favorite @relation(fields: [favoriteId], references: [id])
+  favorite   Favorite @relation(fields: [favoriteId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
-  album      Album    @relation(fields: [albumId], references: [id])
+  album      Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
 }
 
 model Product {
@@ -80,7 +80,7 @@ model Product {
   dateAdded    DateTime   @default(now())
   verified     Boolean    @default(false)
   verifiedDate DateTime   @updatedAt
-  supplier     Supplier   @relation(fields: [supplierId], references: [id])
+  supplier     Supplier   @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   favorites    Favorite[]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
@@ -93,7 +93,7 @@ model Album {
   userId        String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  user          User            @relation(fields: [userId], references: [id])
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   AlbumFavorite AlbumFavorite[]
 }
 
@@ -104,7 +104,7 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Conversation {
@@ -121,8 +121,8 @@ model ConversationMembers {
   userId         String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Message {
@@ -132,6 +132,6 @@ model Message {
   content        String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  sender         User         @relation(fields: [senderId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }

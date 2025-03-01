@@ -64,3 +64,9 @@ export const NotificationSchema = z.object({
   read: z.boolean().default(false),
   createdAt: z.date(),
 });
+
+export const ProductWithSupplierSchema = ProductSchema.extend({
+  supplier: SupplierSchema,
+});
+
+export type ProductWithSupplier = z.infer<typeof ProductWithSupplierSchema>;

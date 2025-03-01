@@ -6,7 +6,7 @@ import {
   Package,
   PackageSearch,
   Shield,
-  User,
+  UserSearch,
 } from "lucide-react";
 import React from "react";
 import { AppSidebar } from "../sidebar/AppSidebar";
@@ -32,8 +32,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       url: "/admin/dashboard",
       icon: LayoutDashboard,
     },
-    { title: "Supplier Verification", url: "/admin/products", icon: Package },
-    { title: "Product Verification", url: "/admin/suppliers", icon: User },
+    {
+      title: "Supplier Verification",
+      url: "/admin/suppliers",
+      icon: UserSearch,
+    },
+    { title: "Product Verification", url: "/admin/products", icon: Package },
   ];
 
   const switcherData = [];

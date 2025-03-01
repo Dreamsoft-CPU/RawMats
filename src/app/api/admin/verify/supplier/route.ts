@@ -32,7 +32,7 @@ export const POST = async (request: NextRequest) => {
 
 export const DELETE = async (request: NextRequest) => {
   try {
-    const { id, userId, reason } = await request.json();
+    const { id, userId, reasons, comment } = await request.json();
 
     const supplier = await prisma.supplier.findUnique({
       where: {
@@ -56,7 +56,11 @@ export const DELETE = async (request: NextRequest) => {
     await prisma.notification.create({
       data: {
         title: "Supplier Rejected",
-        content: `${supplier.businessName} has been unverified due to ${reason}. Please make the necessary changes and resubmit.`,
+        content: `${supplier.businessName}'s application has been rejected.
+        Reasons for rejection: 
+        ${reasons.join(", ")}. 
+        Additional comments: 
+        ${comment}`,
         userId,
       },
     });
