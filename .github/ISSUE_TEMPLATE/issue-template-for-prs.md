@@ -1,7 +1,7 @@
 ---
 name: Issue Template for PRs
 about: Template to avoid formatting differences
-title: [Bug/Defect] - (Short Title)
+title: Bug/Defect - (Short Title)
 labels: ''
 assignees: ''
 
