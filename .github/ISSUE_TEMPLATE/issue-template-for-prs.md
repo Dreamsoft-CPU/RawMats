@@ -1,12 +1,21 @@
 ---
 name: Issue Template for PRs
 about: Template to avoid formatting differences
-title: User Story - <task>
+title: [Bug/Defect] - (Short Title)
 labels: ''
 assignees: ''
 
 ---
 
-## Task ID: <task ID here>
-### Description
-<user story here>
+## Bug/Defect ID: <task ID here>
+## Description
+Short description about the bug
+
+### Steps to Reproduce
+- Bullet form
+
+### Expected Result vs Actual Result
+- Expected
+- Actual
+
+
