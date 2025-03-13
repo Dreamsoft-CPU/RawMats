@@ -1,4 +1,4 @@
-import prisma from "@/utils/prisma/client";
+import prisma from "@/utils/prisma";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -48,12 +48,8 @@ export async function GET(request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Error fetching users:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to fetch data. Please try again later.",
-      },
-      { status: 500 },
-    );
+    const message =
+      error instanceof Error ? error.message : "An error occurred";
+    return NextResponse.json({ error: true, message }, { status: 400 });
   }
 }

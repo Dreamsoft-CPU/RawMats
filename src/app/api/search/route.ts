@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/prisma/client";
+import prisma from "@/utils/prisma";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -38,12 +38,13 @@ export async function GET(request: Request) {
       orderBy: { dateAdded: "desc" },
     });
 
-    return NextResponse.json(products);
+    return NextResponse.json({ products }, { status: 200 });
   } catch (error) {
-    console.error("Error searching products:", error);
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occured";
     return NextResponse.json(
-      { error: "An error occurred while searching" },
-      { status: 500 },
+      { error: true, message: message },
+      { status: 400 },
     );
   }
 }

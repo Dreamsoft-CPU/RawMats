@@ -103,7 +103,7 @@ export default function RejectionDialog({
           </Button>
           <Button
             variant="destructive"
-            className="bg-rawmats-feedback-error hover:bg-red-600"
+            className=" hover:bg-red-600"
             onClick={handleReject}
             disabled={selectedReasons.length === 0}
           >

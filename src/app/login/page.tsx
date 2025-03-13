@@ -1,22 +1,14 @@
+import { LoginForm } from "@/components/auth/LoginForm";
 import React from "react";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
-import AuthScreen from "@/components/Screens/AuthScreen";
-import LoginForm from "@/components/AuthComponents/LoginForm";
 
-const LoginPage = async () => {
-  const header = "Ready to Dive In?";
-  const message = "Log in to your account!";
-  const body: React.ReactNode = <LoginForm />;
-
-  const supabase = createClient();
-  const { data, error } = await supabase.auth.getUser();
-
-  if (!error || data.user) {
-    redirect("/");
-  }
-
-  return <AuthScreen header={header} message={message} body={body} />;
+const LoginPage = () => {
+  return (
+    <div className="flex w-full min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-3xl">
+        <LoginForm />
+      </div>
+    </div>
+  );
 };
 
 export default LoginPage;

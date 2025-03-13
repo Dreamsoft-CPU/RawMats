@@ -1,48 +1,48 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
-import prisma from "@/utils/prisma/client";
-import FavoritePreviewCard from "@/components/Favorites/FavoritePreviewCard";
-import NavBar from "@/components/Home/NavBar";
-import { CreateAlbumDialog } from "@/components/Albums/CreateAlbumDialog";
-import AlbumCarousel from "@/components/Albums/AlbumCarousel";
+import AlbumAndFavoritesList from "@/components/favorites/AlbumAndFavoritesList";
+import HomeSidebar from "@/components/home/HomeSidebar";
+import HomeInset from "@/components/sidebar/insets/HomeInset";
+import prisma from "@/utils/prisma";
+import { getDbUser } from "@/utils/server/getDbUser";
+import { getSidebarData } from "@/utils/server/getSidebarData";
+import React from "react";
 
-export default async function Home() {
-  // Supabase Auth
-  const supabase = createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) {
-    redirect("/login");
+const FavoritesPage = async () => {
+  const sidebarData = await getSidebarData();
+  const user = await getDbUser();
+
+  if ("error" in user) {
+    throw new Error(user.message);
   }
 
-  // Fetch User Details
-  const user = await prisma.user.findUnique({
-    where: { id: data.user.id },
-    include: { supplier: true },
-  });
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const userFavorites = await prisma.favorite.findMany({
-    where: { userId: user.id },
+  const albumAndFavoriteData = await prisma.user.findUnique({
+    where: {
+      id: user.id,
+    },
     include: {
-      product: {
+      Album: {
         include: {
-          supplier: true,
+          AlbumFavorite: {
+            include: {
+              favorite: {
+                include: {
+                  product: {
+                    include: {
+                      supplier: true,
+                      favorites: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
-    },
-  });
-
-  const albums = await prisma.album.findMany({
-    where: { userId: user.id },
-    include: {
-      favorites: {
+      Favorite: {
         include: {
           product: {
             include: {
               supplier: true,
+              favorites: true,
             },
           },
         },
@@ -50,50 +50,30 @@ export default async function Home() {
     },
   });
 
-  return (
-    <div className="min-h-screen w-screen">
-      <NavBar user={user} supplier={user.supplier} />
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {/* Albums Section */}
-        <section className="mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-rawmats-primary-700">
-              Albums
-            </h2>
-            <CreateAlbumDialog userId={user.id} />
+  if (!albumAndFavoriteData) {
+    return (
+      <div className="flex h-screen w-full">
+        <HomeSidebar data={sidebarData} />
+        <HomeInset userData={user}>
+          <div>
+            No favorites! Click on the hearts on the products to start adding
           </div>
-          <AlbumCarousel albums={albums} />
-        </section>
+        </HomeInset>
+      </div>
+    );
+  }
 
-        {/* Favorites Section */}
-        <section className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-rawmats-primary-700">
-              Favorites
-            </h2>
-          </div>
-          {userFavorites.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-              {userFavorites.map(({ product }) => (
-                <FavoritePreviewCard
-                  key={product.id}
-                  userId={user.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  supplier={product.supplier}
-                  albums={albums}
-                  image={product.image}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">
-              {"You haven't added any products to your favorites yet."}
-            </p>
-          )}
-        </section>
-      </main>
+  return (
+    <div className="flex h-screen w-full">
+      <HomeSidebar data={sidebarData} />
+      <HomeInset userData={user}>
+        <AlbumAndFavoritesList
+          albumAndFavoriteData={albumAndFavoriteData}
+          userId={user.id}
+        />
+      </HomeInset>
     </div>
   );
-}
+};
+
+export default FavoritesPage;
