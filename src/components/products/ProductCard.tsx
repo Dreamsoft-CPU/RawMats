@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import {
   Card,
@@ -19,6 +20,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   data: { id, name, image, price, supplier, favorite, userId },
 }) => {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [rating, setRating] = useState(5.0); 
   const favorited = favorite.some((fav) => fav.userId === userId);
   const router = useRouter();
 
@@ -53,14 +55,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <p className="text-primary font-bold text-lg">₱{price.toFixed(2)}</p>
         </CardContent>
         <CardFooter>
-          <p className="flex flex-row items-center gap-1 cursor-pointer" onClick={() => setIsFeedbackOpen(true)}>
+          <p
+            className="flex flex-row items-center gap-1 cursor-pointer"
+            onClick={() => setIsFeedbackOpen(true)}
+          >
             <StarFilledIcon className="text-yellow-300" />
-            5.0
+            {rating.toFixed(1)}
           </p>
         </CardFooter>
       </Card>
 
-      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+      <FeedbackModal  //added here feedback model 
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        onRatingSubmit={(newRating) => setRating(newRating)}
+      />
     </>
   );
 };
