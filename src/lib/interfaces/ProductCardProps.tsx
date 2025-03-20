@@ -9,5 +9,7 @@ export interface ProductCardProps {
     userId: string;
     favorite: Partial<Favorite>[];
     supplier: Partial<Supplier>;
+    averageRating?: number;
+    totalReviews?: number;
   };
 }

@@ -5,7 +5,7 @@ import prisma from "@/utils/prisma";
 import { getDbUser } from "@/utils/server/getDbUser";
 import { getSidebarData } from "@/utils/server/getSidebarData";
 import { redirect } from "next/navigation";
-import React from "react";
+import type { Rating } from "@prisma/client";
 
 const RatingsPage = async ({
   searchParams,
@@ -30,7 +30,11 @@ const RatingsPage = async ({
     select: {
       id: true,
       name: true,
-      supplier: true,
+      supplier: {
+        select: {
+          businessName: true,
+        },
+      },
     },
   });
 
@@ -38,13 +42,44 @@ const RatingsPage = async ({
     redirect("/error?code=404&message=Product%20not%20found");
   }
 
+  const ratings = await prisma.rating.findMany({
+    where: { productId },
+    include: {
+      user: {
+        select: {
+          displayName: true,
+          profilePicture: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const totalReviews = ratings.length;
+  const averageRating =
+    totalReviews > 0
+      ? ratings.reduce(
+          (sum: number, rating: Rating) => sum + rating.rating,
+          0,
+        ) / totalReviews
+      : 0;
+
   return (
     <div className="flex h-screen w-full">
       <HomeSidebar data={sidebarData} />
       <div className="flex-grow h-full">
         <HomeInset userData={user}>
           <div className="h-full w-full">
-            <RatingsInfo />
+            <RatingsInfo
+              productId={product.id}
+              initialRatings={ratings}
+              averageRating={averageRating}
+              totalReviews={totalReviews}
+              currentUserId={user.id}
+              productName={product.name}
+            />
           </div>
         </HomeInset>
       </div>

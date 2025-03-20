@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import type React from "react";
+
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,22 +17,35 @@ import { Star } from "lucide-react";
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRatingSubmit: (rating: number) => void;
+  onRatingSubmit: (rating: number, comment: string) => void;
+  productName?: string;
+  initialRating?: number;
+  initialComment?: string;
 }
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({
   isOpen,
   onClose,
   onRatingSubmit,
+  productName = "this product",
+  initialRating = 0,
+  initialComment = "",
 }) => {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [comment, setComment] = useState<string>("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setRating(initialRating);
+      setComment(initialComment);
+    }
+  }, [isOpen, initialRating, initialComment]);
 
   const handleSubmit = () => {
     if (rating > 0) {
-      onRatingSubmit(rating);
+      onRatingSubmit(rating, comment);
     }
-    onClose();
   };
 
   return (
@@ -38,7 +53,9 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
       <DialogContent className="max-w-sm min-h-[400px] p-6 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
-            Give Feedback
+            {initialRating > 0
+              ? `Update Rating for ${productName}`
+              : `Rate ${productName}`}
           </DialogTitle>
           <p className="text-sm text-gray-500">
             Your feedback helps us improve!
@@ -66,6 +83,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
           <Textarea
             placeholder="Write your feedback here..."
             className="mt-2"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
           />
         </div>
 
@@ -73,7 +92,9 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Submit</Button>
+          <Button onClick={handleSubmit} disabled={rating === 0}>
+            {initialRating > 0 ? "Update" : "Submit"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

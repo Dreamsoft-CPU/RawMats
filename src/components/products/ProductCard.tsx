@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import type React from "react";
 import {
   Card,
   CardContent,
@@ -11,15 +11,28 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { StarFilledIcon } from "@radix-ui/react-icons";
-import { ProductCardProps } from "@/lib/interfaces/ProductCardProps";
+import type { ProductCardProps } from "@/lib/interfaces/ProductCardProps";
 import FavoriteButton from "./FavoriteButton";
 import { useRouter } from "next/navigation";
 
 const ProductCard: React.FC<ProductCardProps> = ({
-  data: { id, name, image, price, supplier, favorite, userId },
+  data: {
+    id,
+    name,
+    image,
+    price,
+    supplier,
+    favorite,
+    userId,
+    averageRating,
+    totalReviews = 0,
+  },
 }) => {
   const favorited = favorite.some((fav) => fav.userId === userId);
   const router = useRouter();
+
+  const reviewCount = totalReviews || 0;
+  const hasRatings = reviewCount > 0;
 
   return (
     <Card className="w-full max-w-52 h-[420px] hover:border-primary transition-transform duration-200 hover:scale-105">
@@ -29,7 +42,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           className="w-full h-52 overflow-hidden"
         >
           <Image
-            src={image}
+            src={image || "/placeholder.svg"}
             alt={name}
             width={500}
             height={500}
@@ -55,8 +68,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
           className="flex flex-row items-center gap-1 cursor-pointer"
           onClick={() => router.push(`/ratings?productId=${id}`)}
         >
-          <StarFilledIcon className="text-yellow-300" />
-          5.0
+          <StarFilledIcon
+            className={hasRatings ? "text-yellow-400" : "text-gray-300"}
+          />
+          {hasRatings
+            ? `${averageRating?.toFixed(1) || "0.0"}`
+            : "No ratings yet"}
         </p>
       </CardFooter>
     </Card>
