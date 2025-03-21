@@ -42,14 +42,14 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
 }) => {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string | number>(
-    "All Stars",
+    "All Stars"
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ratings, setRatings] = useState<Rating[]>(initialRatings);
   const [avgRating, setAvgRating] = useState<number>(averageRating);
   const [reviewCount, setReviewCount] = useState<number>(totalReviews);
   const [userRating, setUserRating] = useState<Rating | null>(
-    initialRatings.find((r) => r.userId === currentUserId) || null,
+    initialRatings.find((r) => r.userId === currentUserId) || null
   );
 
   useEffect(() => {
@@ -63,7 +63,7 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
         setAvgRating(data.averageRating);
         setReviewCount(data.totalReviews);
         setUserRating(
-          data.ratings.find((r: Rating) => r.userId === currentUserId) || null,
+          data.ratings.find((r: Rating) => r.userId === currentUserId) || null
         );
       } catch (error) {
         console.error("Error fetching ratings:", error);
@@ -136,17 +136,16 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
   return (
     <div className="p-4 md:p-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h1 className="text-2xl font-bold mb-4 md:mb-0">
+        <h1 className="text-3xl font-bold text-gray-800">
           Reviews for {productName}
-        </h1>
-
+        </h1>{" "}
         <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex items-center">
-            <div className="flex items-center mr-2">
+          <div className="flex items-center space-x-2">
+            <div className="flex">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-5 h-5 ${
+                  className={`w-6 h-6 transition-all duration-300 ${
                     reviewCount > 0 && i < Math.floor(avgRating)
                       ? "fill-yellow-400 text-yellow-400"
                       : "fill-none text-gray-300"
@@ -154,22 +153,19 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
                 />
               ))}
             </div>
-            <span className="text-lg font-medium">
+            <span className="text-lg font-semibold text-gray-700">
               {reviewCount > 0 ? avgRating.toFixed(1) : "No ratings yet"}
             </span>
             {reviewCount > 0 && (
-              <>
-                <span className="mx-2 text-gray-500">•</span>
-                <span className="text-gray-600">
-                  {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
-                </span>
-              </>
+              <span className="text-gray-500 text-sm">
+                ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+              </span>
             )}
           </div>
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors"
+            className="border border-indigo-600 text-blue-600 hover:bg-indigo-100 py-2 px-5 rounded-full text-sm font-medium transition-all shadow-md"
           >
             {userRating ? "Edit Your Review" : "Write a Review"}
           </button>
@@ -180,10 +176,10 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
         {filterOptions.map((option) => (
           <button
             key={option}
-            className={`px-4 py-2 text-sm font-medium border rounded-lg transition-all ${
+            className={`px-4 py-2 text-sm font-medium border rounded-full transition-all shadow-sm ${
               selectedFilter === option
-                ? "bg-indigo-600 text-white border-indigo-600"
-                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                ? "bg-indigo-100 text-black border-indigo-600"
+                : "border-indigo-300 text-gray-700 hover:bg-gray-100"
             }`}
             onClick={() => setSelectedFilter(option)}
           >
@@ -192,15 +188,16 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
         ))}
       </div>
 
-      <div className="bg-white rounded-lg shadow-md">
+      <div className="space-y-4">
         {filteredRatings.length > 0 ? (
-          filteredRatings.map((rating, index) => (
+          filteredRatings.map((rating) => (
             <div
               key={rating.id}
-              className={`p-4 ${index !== 0 ? "border-t border-gray-200" : ""}`}
+              className="p-5 border border-gray-100 bg-white rounded-2xl bg-white shadow-sm hover:shadow-md transition-all"
             >
-              <div className="flex items-start">
-                <Avatar className="h-10 w-10 mr-3">
+              <div className="flex items-start space-x-4">
+                <Avatar className="h-12 w-12">
+                  {" "}
                   <AvatarImage
                     src={rating.user.profilePicture}
                     alt={rating.user.displayName}
@@ -210,33 +207,37 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="flex flex-col">
-                    <p className="font-medium">{rating.user.displayName}</p>
-                    <p className="text-xs text-gray-500">
-                      {formatDate(rating.createdAt)}
-                    </p>
-                    <div className="flex items-center mt-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i < rating.rating
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "fill-none text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    {rating.comment && (
-                      <p className="text-gray-700 mt-2">{rating.comment}</p>
-                    )}
+                  <p className="font-semibold text-gray-800">
+                    {rating.user.displayName}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatDate(rating.createdAt)}
+                  </p>
+                  <div className="flex items-center mt-1 space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 transition-all ${
+                          i < rating.rating
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-none text-gray-300"
+                        }`}
+                      />
+                    ))}
                   </div>
+
+                  {rating.comment && (
+                    <p className="text-gray-700 mt-3 text-sm">
+                      {rating.comment}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-10 text-center text-gray-500 rounded-lg">
+            {" "}
             No reviews found for this product with the selected filter.
           </div>
         )}

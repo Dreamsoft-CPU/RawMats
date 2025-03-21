@@ -14,6 +14,12 @@ import { StarFilledIcon } from "@radix-ui/react-icons";
 import type { ProductCardProps } from "@/lib/interfaces/ProductCardProps";
 import FavoriteButton from "./FavoriteButton";
 import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ProductCard: React.FC<ProductCardProps> = ({
   data: {
@@ -64,17 +70,26 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <p className="text-primary font-bold text-lg">₱{price.toFixed(2)}</p>
       </CardContent>
       <CardFooter>
-        <p
-          className="flex flex-row items-center gap-1 cursor-pointer"
-          onClick={() => router.push(`/ratings?productId=${id}`)}
-        >
-          <StarFilledIcon
-            className={hasRatings ? "text-yellow-400" : "text-gray-300"}
-          />
-          {hasRatings
-            ? `${averageRating?.toFixed(1) || "0.0"}`
-            : "No ratings yet"}
-        </p>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p
+                className="flex flex-row items-center gap-1 cursor-pointer"
+                onClick={() => router.push(`/ratings?productId=${id}`)}
+              >
+                <StarFilledIcon
+                  className={hasRatings ? "text-yellow-400" : "text-gray-300"}
+                />
+                {hasRatings
+                  ? `${averageRating?.toFixed(1) || "0.0"}`
+                  : "No ratings yet"}
+              </p>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View Feedbacks</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </CardFooter>
     </Card>
   );
