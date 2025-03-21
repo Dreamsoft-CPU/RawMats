@@ -6,7 +6,6 @@ import prisma from "@/utils/prisma";
 import { Prisma } from "@prisma/client";
 import { getDbUser } from "@/utils/server/getDbUser";
 import { getSidebarData } from "@/utils/server/getSidebarData";
-import React from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -65,9 +64,25 @@ const HomePage = async ({
         },
       },
       supplier: true,
+      ratings: true,
     },
     skip: (page - 1) * productsPerPage,
     take: productsPerPage,
+  });
+
+  const productsWithRatings = products.map((product) => {
+    const totalReviews = product.ratings.length;
+    const averageRating =
+      totalReviews > 0
+        ? product.ratings.reduce((sum, rating) => sum + rating.rating, 0) /
+          totalReviews
+        : 0;
+
+    return {
+      ...product,
+      averageRating,
+      totalReviews,
+    };
   });
 
   // For featured sections (Daily Discover, New Arrivals)
@@ -81,12 +96,28 @@ const HomePage = async ({
         },
       },
       supplier: true,
+      ratings: true,
     },
     take: 20,
   });
 
+  const featuredProductsWithRatings = featuredProducts.map((product) => {
+    const totalReviews = product.ratings.length;
+    const averageRating =
+      totalReviews > 0
+        ? product.ratings.reduce((sum, rating) => sum + rating.rating, 0) /
+          totalReviews
+        : 0;
+
+    return {
+      ...product,
+      averageRating,
+      totalReviews,
+    };
+  });
+
   const min = 5;
-  const max = Math.max(min, featuredProducts.length - 5);
+  const max = Math.max(min, featuredProductsWithRatings.length - 5);
   const random = Math.floor(Math.random() * (max - min + 1)) + min;
 
   return (
@@ -104,20 +135,24 @@ const HomePage = async ({
                   </h2>
                 </div>
                 <div className="justify-center items-center grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {featuredProducts.slice(0, random).map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      data={{
-                        id: product.id,
-                        name: product.name,
-                        image: product.image,
-                        price: product.price,
-                        userId: user.id,
-                        favorite: product.favorites,
-                        supplier: product.supplier,
-                      }}
-                    />
-                  ))}
+                  {featuredProductsWithRatings
+                    .slice(0, random)
+                    .map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        data={{
+                          id: product.id,
+                          name: product.name,
+                          image: product.image,
+                          price: product.price,
+                          userId: user.id,
+                          favorite: product.favorites,
+                          supplier: product.supplier,
+                          averageRating: product.averageRating,
+                          totalReviews: product.totalReviews,
+                        }}
+                      />
+                    ))}
                 </div>
               </div>
 
@@ -130,24 +165,28 @@ const HomePage = async ({
                   <div className="flex pb-4 gap-4 items-center justify-center">
                     <ScrollArea className="w-[80vw] overflow-hidden items-center">
                       <div className="flex space-x-4">
-                        {featuredProducts.slice(0, 10).map((product) => (
-                          <div
-                            key={product.id}
-                            className="w-[250px] flex-shrink-0"
-                          >
-                            <ProductCard
-                              data={{
-                                id: product.id,
-                                name: product.name,
-                                image: product.image,
-                                price: product.price,
-                                userId: user.id,
-                                favorite: product.favorites,
-                                supplier: product.supplier,
-                              }}
-                            />
-                          </div>
-                        ))}
+                        {featuredProductsWithRatings
+                          .slice(0, 10)
+                          .map((product) => (
+                            <div
+                              key={product.id}
+                              className="w-[250px] flex-shrink-0"
+                            >
+                              <ProductCard
+                                data={{
+                                  id: product.id,
+                                  name: product.name,
+                                  image: product.image,
+                                  price: product.price,
+                                  userId: user.id,
+                                  favorite: product.favorites,
+                                  supplier: product.supplier,
+                                  averageRating: product.averageRating,
+                                  totalReviews: product.totalReviews,
+                                }}
+                              />
+                            </div>
+                          ))}
                       </div>
                       <ScrollBar orientation="horizontal" />
                     </ScrollArea>
@@ -172,7 +211,7 @@ const HomePage = async ({
               )}
             </div>
             <div className="grid grid-cols-1 items-center justify-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.map((product) => (
+              {productsWithRatings.map((product) => (
                 <ProductCard
                   key={product.id}
                   data={{
@@ -183,6 +222,8 @@ const HomePage = async ({
                     userId: user.id,
                     favorite: product.favorites,
                     supplier: product.supplier,
+                    averageRating: product.averageRating,
+                    totalReviews: product.totalReviews,
                   }}
                 />
               ))}
