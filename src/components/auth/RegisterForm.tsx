@@ -1,7 +1,6 @@
 "use client";
 import { useState, Fragment } from "react";
 import { cn } from "@/lib/utils";
-
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent } from "@/components/ui/card";
@@ -72,7 +71,7 @@ export function RegisterForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden rounded-2xl backdrop-blur-xl bg-white/70 border border-gray-200 shadow-[0px_6px_16px_rgba(74,144,226,0.4)]">
         <CardContent className="grid p-0 md:grid-cols-2">
           {confirmEmailSent ? (
             <Fragment>
@@ -96,12 +95,19 @@ export function RegisterForm({
                   onSubmit={form.handleSubmit(onSubmit)}
                 >
                   <div className="flex flex-col gap-2">
-                    <div className="flex flex-col items-center text-center">
-                      <h1 className="text-2xl font-bold">Join the Community</h1>
-                      <p className="text-balance text-muted-foreground">
-                        Register a new RawMats account
+                    <div className="flex flex-col items-start text-left space-y-3">
+                      <h1 className="text-3xl font-extrabold text-[#4A90E2] drop-shadow-md">
+                        Join the Community
+                      </h1>
+                      <p className="text-gray-600 text-sm font-medium leading-relaxed">
+                        Register a new{" "}
+                        <span className="text-[#4A90E2] font-semibold">
+                          RawMats
+                        </span>{" "}
+                        account.
                       </p>
                     </div>
+
                     <div className="grid gap-2">
                       <FormField
                         control={form.control}
@@ -113,6 +119,7 @@ export function RegisterForm({
                               <Input
                                 {...field}
                                 placeholder="rawmats@example.com"
+                                className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 shadow-md"
                               />
                             </FormControl>
                             <FormMessage />
@@ -128,7 +135,11 @@ export function RegisterForm({
                           <FormItem>
                             <FormLabel>Full Name</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="AJ Aparicio" />
+                              <Input
+                                {...field}
+                                placeholder="AJ Aparicio"
+                                className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 shadow-md"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -143,7 +154,11 @@ export function RegisterForm({
                           <FormItem>
                             <FormLabel>Phone Number</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="09XXXXXXXXX" />
+                              <Input
+                                {...field}
+                                placeholder="09XXXXXXXXX"
+                                className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 shadow-md"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -157,12 +172,12 @@ export function RegisterForm({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Password</FormLabel>
-
                             <FormControl>
                               <Input
                                 {...field}
                                 type="password"
                                 placeholder="*******"
+                                className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 shadow-md"
                               />
                             </FormControl>
                             <FormMessage />
@@ -183,6 +198,7 @@ export function RegisterForm({
                                 {...field}
                                 type="password"
                                 placeholder="*******"
+                                className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 shadow-md"
                               />
                             </FormControl>
                             <FormDescription>
@@ -193,9 +209,18 @@ export function RegisterForm({
                         )}
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Registering..." : "Register"}
-                    </Button>
+
+                    <div className="flex justify-center">
+                      <Button
+                        type="submit"
+                        className="max-w-[175px] w-full rounded-2xl py-3 text-sm bg-[#6AB0E3] opacity-500
+                                  text-white shadow-md hover:bg-[#92B6D5] focus:ring-2 focus:ring-blue-500 transition-all"
+                        disabled={loading}
+                      >
+                        {loading ? "Registering..." : "Register"}
+                      </Button>
+                    </div>
+
                     <div className="text-feedback-error flex items-center justify-center">
                       {!!errorMessage && errorMessage}
                     </div>
@@ -207,7 +232,12 @@ export function RegisterForm({
                     <div className="text-center text-sm">
                       You already have an account{" "}
                       <a href="#" className="underline underline-offset-4">
-                        <Link href="/login">Sign in</Link>
+                        <Link
+                          href="/login"
+                          className="text-indigo-600 hover:underline"
+                        >
+                          Sign in
+                        </Link>
                       </a>
                     </div>
                   </div>
@@ -221,14 +251,20 @@ export function RegisterForm({
               height={500}
               src="/logo.png"
               alt="Image"
-              className="absolute inset-0 h-full w-full object-contain dark:brightness-[0.2] dark:grayscale"
+              className="absolute inset-0 h-full w-full object-contain mix-blend-multiply dark:brightness-[0.8] drop-shadow-lg"
             />
           </div>
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        By clicking continue, you agree to our{" "}
+        <a href="#" className="text-indigo-600 hover:underline">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a href="#" className="text-indigo-600 hover:underline">
+          Privacy Policy
+        </a>.
       </div>
     </div>
   );
