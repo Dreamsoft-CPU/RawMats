@@ -1,6 +1,6 @@
 import SupplierSidebar from "@/components/home/SupplierSidebar";
 import SupplierInset from "@/components/sidebar/insets/SupplierInset";
-import ProfileCard from "@/components/supplier/profile/ProfileCard";
+import EditableProfileCard from "@/components/supplier/profile/EditableProfileCard";
 import { getDbUser } from "@/utils/server/getDbUser";
 import { getSidebarData } from "@/utils/server/getSidebarData";
 import React from "react";
@@ -17,7 +17,7 @@ const SupplierProfile = async () => {
     <div className="flex h-screen w-full">
       <SupplierSidebar data={sidebarData} />
       <SupplierInset userData={userData}>
-        <ProfileCard userData={userData} />
+        <EditableProfileCard userData={userData} />
       </SupplierInset>
     </div>
   );
