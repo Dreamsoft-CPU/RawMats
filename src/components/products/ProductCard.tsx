@@ -13,6 +13,7 @@ import { StarFilledIcon } from "@radix-ui/react-icons";
 import { ProductCardProps } from "@/lib/interfaces/ProductCardProps";
 import FavoriteButton from "./FavoriteButton";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const ProductCard: React.FC<ProductCardProps> = ({
   data: { id, name, image, price, supplier, favorite, userId },
@@ -42,7 +43,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <FavoriteButton favorite={favorited} id={id} userId={userId} />
           </CardTitle>
           <CardDescription className="truncate">
-            {supplier.businessName || "RawMats Supplier"}
+            <Link
+              href={`/supplier/${supplier.businessName}`}
+              className="hover:underline"
+            >
+              {supplier.businessName || "RawMats Supplier"}
+            </Link>
           </CardDescription>
         </div>
       </CardHeader>
