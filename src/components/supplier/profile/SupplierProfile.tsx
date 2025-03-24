@@ -1,11 +1,17 @@
 "use client";
 
 import React from "react";
-import { CheckCircle, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import Image from "next/image";
 import { SupplierInfoProps } from "@/lib/interfaces/SupplierInfoProps";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
+  const productCount = data.Product.filter(
+    (product) => product.verified,
+  ).length;
+
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg space-y-4 text-sm w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -21,12 +27,29 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
           </div>
         </div>
         <div className="flex-1">
-          <h1 className="text-lg font-semibold text-gray-800">
-            {data.businessName}
-          </h1>
-          <p className="text-green-600 text-xs font-semibold">
-            RawMats Supplier
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-lg font-semibold text-gray-800">
+                {data.businessName}
+              </h1>
+              <p className="text-green-600 text-xs font-semibold">
+                RawMats Supplier
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  toast.success("Link copied to clipboard");
+                }}
+              >
+                Copy link
+              </Button>
+            </div>
+          </div>
           <div className="flex items-center gap-1 mt-1">
             <div className="flex relative">
               <div className="flex">
@@ -54,7 +77,8 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
               </div>
             </div>
             <span className="text-xs text-gray-600">
-              ({(4.8).toFixed(1)} • {Number(1432).toLocaleString()} reviews)
+              ({productCount} product{productCount !== 1 && "s"} •{" "}
+              {Number(1432).toLocaleString()} reviews)
             </span>
           </div>
         </div>
@@ -66,11 +90,6 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
         <h2 className="text-base font-medium text-gray-800">
           Business Details
         </h2>
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1 bg-green-100 text-green-600 px-2 py-1 rounded-md text-xs font-semibold">
-            <CheckCircle size={12} /> Verified
-          </span>
-        </div>
         <div>
           <div className="flex justify-between items-center">
             <strong className="text-gray-700">Bio</strong>
