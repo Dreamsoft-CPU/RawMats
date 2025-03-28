@@ -1,7 +1,14 @@
 "use client";
 
 import { SidebarNavItems } from "@/lib/types/sidebarData.type";
-import { Heart, HelpCircle, Home, PackageSearch, Shield } from "lucide-react";
+import {
+  Heart,
+  HelpCircle,
+  Home,
+  Mail,
+  PackageSearch,
+  Shield,
+} from "lucide-react";
 import React from "react";
 import { AppSidebar } from "../sidebar/AppSidebar";
 
@@ -28,6 +35,11 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({
       icon: Home,
     },
     { title: "Favorites", url: "/favorites", icon: Heart },
+    {
+      title: "Conversations",
+      url: "/conversations",
+      icon: Mail,
+    },
     { title: "Help Center", url: "/help", icon: HelpCircle },
   ];
 

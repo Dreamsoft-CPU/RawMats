@@ -6,6 +6,7 @@ import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline";
 import type { ProductCardProps } from "@/lib/interfaces/ProductPageProps";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { toast } from "sonner";
 import { Star } from "lucide-react";
 import Link from "next/link";
 import FeedbackModal from "../ratings/FeedbackModal";
@@ -23,6 +24,24 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
   const hasRatings = totalReviews > 0;
   const averageRating = data.averageRating || 0;
 
+  const createConversation = async () => {
+    try {
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ receiverId: data.supplier.userId }),
+      });
+
+      if (response.ok) {
+        router.push("/conversations");
+      }
+    } catch (error) {
+      console.error("Failed to create conversation:", error);
+    }
+  };
+
   const toggleFavorite = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -39,7 +58,8 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
         router.refresh();
       }
     } catch (error) {
-      console.error("Failed to toggle favorite:", error);
+      toast.error("Failed to update favorite status");
+      console.log("Failed to update favorite status:", error);
     } finally {
       setIsLoading(false);
     }
@@ -188,7 +208,12 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
           </div>
 
           <div className="mt-auto pt-4 md:pt-6">
-            <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg font-medium transition-colors">
+            <button
+              onClick={() => {
+                createConversation();
+              }}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg font-medium transition-colors"
+            >
               Contact Supplier
             </button>
           </div>
