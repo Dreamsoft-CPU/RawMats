@@ -68,7 +68,7 @@ export function SendRecoveryEmailForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden rounded-2xl backdrop-blur-xl bg-white/70 border border-gray-200 shadow-[0px_6px_16px_rgba(74,144,226,0.4)]">
         <CardContent className="grid p-0 md:grid-cols-2">
           {passwordResetSuccess ? (
             <Fragment>
@@ -93,8 +93,10 @@ export function SendRecoveryEmailForm({
                 >
                   <div className="flex flex-col gap-6">
                     <div className="flex flex-col items-center text-center">
-                      <h1 className="text-2xl font-bold">Recovery</h1>
-                      <p className="text-balance text-muted-foreground">
+                      <h1 className="text-3xl font-extrabold text-[#4A90E2] drop-shadow-md">
+                        Recovery
+                      </h1>
+                      <p className="text-gray-600 text-sm font-medium leading-relaxed">
                         Recover your account with a new password
                       </p>
                     </div>
@@ -106,7 +108,11 @@ export function SendRecoveryEmailForm({
                           <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="*******" />
+                              <Input
+                                {...field}
+                                placeholder="*******"
+                                className="bg-white border border-indigo-800 rounded-2xl px-4 py-2 shadow-md"
+                              />
                             </FormControl>
                             <FormDescription>
                               We will send an email for recovery
@@ -116,11 +122,18 @@ export function SendRecoveryEmailForm({
                         )}
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Sending..." : "Send Recovery Email"}
-                    </Button>
-                    <div className="text-feedback-error flex items-center justify-center">
-                      {!!errorMessage && errorMessage}
+                    <div className="flex justify-center">
+                      <Button
+                        type="submit"
+                        className="max-w-[180px] w-full rounded-2xl py-3 text-sm bg-[#6AB0E3] opacity-500
+                              text-white shadow-md hover:bg-[#92B6D5] focus:ring-2 focus:ring-blue-500 transition-all"
+                        disabled={loading}
+                      >
+                        {loading ? "Sending..." : "Send Recovery Email"}
+                      </Button>
+                      <div className="text-feedback-error flex items-center justify-center">
+                        {!!errorMessage && errorMessage}
+                      </div>
                     </div>
                     <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                       <span className="relative z-10 bg-background px-2 text-muted-foreground">
@@ -130,7 +143,12 @@ export function SendRecoveryEmailForm({
                     <div className="text-center text-sm">
                       Remember your password?{" "}
                       <a href="#" className="underline underline-offset-4">
-                        <Link href="/login">Sign in</Link>
+                        <Link
+                          href="/login"
+                          className="text-indigo-600 hover:underline"
+                        >
+                          Sign in
+                        </Link>
                       </a>
                     </div>
                   </div>
@@ -144,7 +162,7 @@ export function SendRecoveryEmailForm({
               height={500}
               src="/logo.png"
               alt="Image"
-              className="absolute inset-0 h-full w-full object-contain dark:brightness-[0.2] dark:grayscale"
+              className="absolute inset-0 h-full w-full object-contain mix-blend-multiply dark:brightness-[0.8] drop-shadow-lg"
             />
           </div>
         </CardContent>
