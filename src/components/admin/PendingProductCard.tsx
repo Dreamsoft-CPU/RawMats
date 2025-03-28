@@ -161,6 +161,15 @@ export function ItemVerificationComponent({ products }: ItemVerificationProps) {
                   <p className="text-xs text-muted-foreground overflow-hidden text-ellipsis">
                     Supplier ID: {product.supplierId}
                   </p>
+                  <p className="text-xs text-muted-foreground overflow-hidden text-ellipsis">
+                    Supplier Name:{" "}
+                    <Link
+                      href={`/supplier/${product.supplier.businessName}`}
+                      className="underline"
+                    >
+                      {product.supplier.businessName}
+                    </Link>
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Date Added:{" "}
                     {new Date(product.dateAdded).toLocaleDateString()}

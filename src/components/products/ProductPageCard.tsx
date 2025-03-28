@@ -6,6 +6,7 @@ import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline";
 import type { ProductCardProps } from "@/lib/interfaces/ProductPageProps";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
 import Link from "next/link";
@@ -184,7 +185,12 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
               </Avatar>
               <div>
                 <p className="font-medium text-gray-900">
-                  {data.supplier.businessName}
+                  <Link
+                    href={`/supplier/${data.supplier.businessName}`}
+                    className="hover:underline"
+                  >
+                    {data.supplier.businessName}
+                  </Link>
                 </p>
                 <a
                   href={`https://maps.google.com/?q=${encodeURIComponent(data.supplier.businessLocation)}`}

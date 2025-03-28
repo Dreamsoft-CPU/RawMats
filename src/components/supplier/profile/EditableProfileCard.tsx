@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, ImageUp, Loader, Pencil, Star, X } from "lucide-react";
+import { ImageUp, Loader, Pencil, Star, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,9 +17,13 @@ import { useRouter } from "next/navigation";
 import ImageCropper from "@/components/images/ImageCropper";
 import { toast } from "sonner";
 import { UserDataProps } from "@/lib/interfaces/ProductListProps";
+import Link from "next/link";
 
-const ProfileCard: React.FC<UserDataProps> = ({ userData }) => {
+const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
   const supplier = userData.Supplier[0]; // Assuming we're showing the first supplier
+  const productCount = userData.Supplier[0].Product.filter(
+    (product) => product.verified,
+  ).length;
   const [bio, setBio] = useState(supplier?.bio || "");
   const [phone, setPhone] = useState(supplier?.businessPhone || "");
   const [isBioModalOpen, setIsBioModalOpen] = useState(false);
@@ -163,12 +167,23 @@ const ProfileCard: React.FC<UserDataProps> = ({ userData }) => {
           />
         </div>
         <div className="flex-1">
-          <h1 className="text-lg font-semibold text-gray-800">
-            {supplier?.businessName}
-          </h1>
-          <p className="text-green-600 text-xs font-semibold">
-            RawMats Supplier
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-lg font-semibold text-gray-800">
+                {supplier.businessName}
+              </h1>
+              <p className="text-green-600 text-xs font-semibold">
+                RawMats Supplier
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Link href={`/supplier/${supplier.businessName}`}>
+                <Button size="sm" className="text-xs">
+                  User view
+                </Button>
+              </Link>
+            </div>
+          </div>
           <div className="flex items-center gap-1 mt-1">
             <div className="flex relative">
               <div className="flex">
@@ -180,21 +195,24 @@ const ProfileCard: React.FC<UserDataProps> = ({ userData }) => {
                   />
                 ))}
               </div>
-              <div
-                className="flex absolute top-0 left-0 overflow-hidden"
-                style={{ width: `${(4.8 / 5) * 100}%` }}
-              >
+              <div className="grid grid-cols-5 absolute top-0 left-0">
                 {[...Array(5)].map((_, index) => (
-                  <Star
+                  <div
                     key={`fg-${index}`}
-                    size={16}
-                    className="fill-yellow-400 text-yellow-400"
-                  />
+                    style={{ width: `${index === 4 ? "60" : "100"}%` }}
+                    className="overflow-hidden"
+                  >
+                    <Star
+                      size={16}
+                      className="fill-yellow-400 text-yellow-400"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
             <span className="text-xs text-gray-600">
-              ({(4.8).toFixed(1)} • {Number(1432).toLocaleString()} reviews)
+              ({productCount} product{productCount !== 1 && "s"} •{" "}
+              {Number(1432).toLocaleString()} reviews)
             </span>
           </div>
           {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
@@ -205,32 +223,8 @@ const ProfileCard: React.FC<UserDataProps> = ({ userData }) => {
 
       <div className="space-y-3">
         <h2 className="text-base font-medium text-gray-800">
-          Personal Details
+          Business Details
         </h2>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <div className="flex items-center justify-between">
-              <strong className="text-gray-700">Email:</strong>
-            </div>
-            <p className="text-gray-600 text-xs mt-1">{userData.email}</p>
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <strong className="text-gray-700">Phone:</strong>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-blue-600 flex items-center gap-1 p-0 h-auto"
-                onClick={() => setIsPhoneModalOpen(true)}
-              >
-                <Pencil size={12} /> Edit Phone Number
-              </Button>
-            </div>
-            <p className="text-gray-600 text-xs mt-1">
-              {supplier?.businessPhone || "No phone number added"}
-            </p>
-          </div>
-        </div>
         <div>
           <div className="flex justify-between items-center">
             <strong className="text-gray-700">Bio</strong>
@@ -257,24 +251,49 @@ const ProfileCard: React.FC<UserDataProps> = ({ userData }) => {
             <p className="text-gray-400 italic text-xs mt-1">No bio added.</p>
           )}
         </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <strong className="text-gray-700">Location:</strong>
+            <p className="text-blue-500 text-xs mt-1 cursor-pointer hover:underline">
+              {supplier?.businessLocation || "No location added"}
+            </p>
+          </div>
+        </div>
       </div>
 
       <hr className="border-gray-300" />
 
       <div className="space-y-3">
         <h2 className="text-base font-medium text-gray-800">
-          Business Details
+          Supplier Personal Details
         </h2>
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1 bg-green-100 text-green-600 px-2 py-1 rounded-md text-xs font-semibold">
-            <CheckCircle size={12} /> Verified
-          </span>
-        </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <strong className="text-gray-700">Location:</strong>
-            <p className="text-blue-500 text-xs mt-1 cursor-pointer hover:underline">
-              {supplier?.businessLocation || "No location added"}
+            <div className="flex items-center justify-between">
+              <strong className="text-gray-700">Supplier name:</strong>
+            </div>
+            <p className="text-gray-600 text-xs mt-1">{userData.displayName}</p>
+          </div>
+          <div>
+            <div className="flex items-center justify-between">
+              <strong className="text-gray-700">Email:</strong>
+            </div>
+            <p className="text-gray-600 text-xs mt-1">{userData.email}</p>
+          </div>
+          <div>
+            <div className="flex items-center justify-between">
+              <strong className="text-gray-700">Phone:</strong>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-blue-600 flex items-center gap-1 p-0 h-auto"
+                onClick={() => setIsPhoneModalOpen(true)}
+              >
+                <Pencil size={12} /> Edit Phone Number
+              </Button>
+            </div>
+            <p className="text-gray-600 text-xs mt-1">
+              {supplier?.businessPhone || "No phone number added"}
             </p>
           </div>
         </div>
@@ -346,4 +365,4 @@ const ProfileCard: React.FC<UserDataProps> = ({ userData }) => {
   );
 };
 
-export default ProfileCard;
+export default EditableProfileCard;
