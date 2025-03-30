@@ -18,6 +18,30 @@ export const POST = async (request: Request) => {
             create: [{ userId: user.id }, { userId: receiverId }],
           },
         },
+        include: {
+          members: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const receiver = conversation.members.find(
+        (member) => member.user.id === receiverId,
+      );
+
+      await prisma.notification.create({
+        data: {
+          title: "New Conversation",
+          userId: user.id,
+          content: `You have a new message from ${receiver?.user.displayName}`,
+        },
       });
 
       return NextResponse.json({ conversation }, { status: 201 });
