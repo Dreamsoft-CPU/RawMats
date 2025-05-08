@@ -18,11 +18,22 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
   const [conversations, setConversations] =
     useState<UiConversation[]>(initialConversations);
   const [activeConversation, setActiveConversation] =
-    useState<UiConversation | null>(
-      initialConversations.length > 0 ? initialConversations[0] : null,
-    );
+    useState<UiConversation | null>(null);
 
-  // Set up Supabase Realtime subscription for new messages
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const conversationId = params.get("conversationId");
+
+    if (conversations.length > 0) {
+      if (conversationId) {
+        const conversation = conversations.find((c) => c.id === conversationId);
+        setActiveConversation(conversation || conversations[0]);
+      } else {
+        setActiveConversation(conversations[0]);
+      }
+    }
+  }, [conversations]);
+
   useEffect(() => {
     const supabase = createClient();
 
@@ -35,27 +46,23 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
           schema: "public",
           table: "Message",
         },
-        (payload) => {
+        (payload: any) => {
           const newMessage = payload.new as any;
 
-          // Fetch additional data for the new message
           const fetchMessageData = async () => {
             try {
               const response = await fetch(`/api/messages/${newMessage.id}`);
               if (response.ok) {
                 const messageData = await response.json();
 
-                // Update conversations state with the new message
                 setConversations((prevConversations) => {
                   return prevConversations.map((conv) => {
                     if (conv.id === messageData.conversationId) {
-                      // Add the new message to the conversation
                       const updatedMessages = [
                         ...conv.messages.filter((m) => m.id !== messageData.id),
                         messageData,
                       ];
 
-                      // Update the active conversation if it's the current one
                       if (activeConversation?.id === conv.id) {
                         setActiveConversation({
                           ...conv,
@@ -84,13 +91,11 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
       )
       .subscribe();
 
-    // Cleanup subscription when component unmounts
     return () => {
       supabase.removeChannel(subscription);
     };
   }, [activeConversation]);
 
-  // Handle sending a new message
   const handleSendMessage = async (message: string) => {
     if (!activeConversation) return;
 
@@ -110,8 +115,6 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
       if (!response.ok) {
         throw new Error("Failed to send message");
       }
-
-      // The realtime subscription will handle UI updates
     } catch (error) {
       console.error("Failed to send message:", error);
       throw error;
@@ -131,7 +134,6 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
   return (
     <Card className="w-full max-w-6xl mx-auto overflow-hidden">
       <div className="flex h-[600px]">
-        {/* Left sidebar - Conversation list (20% width on desktop, hidden on mobile) */}
         <div className="hidden md:block md:w-1/5">
           <ConversationList
             conversations={conversations}
@@ -141,10 +143,8 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
           />
         </div>
 
-        {/* Right content - Conversation messages (80% width on desktop, full width on mobile) */}
         <div className="w-full md:w-4/5 flex flex-col">
-          {/* Conversation header with Sheet Menu for mobile */}
-          {activeConversation && (
+          {activeConversation ? (
             <>
               <div className="p-4 border-b border-border bg-card flex items-center">
                 <MobileConversationList
@@ -163,18 +163,14 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
                 </div>
               </div>
 
-              {/* Messages area */}
               <MessageList conversation={activeConversation} userId={userId} />
 
-              {/* Message input */}
               <MessageInput
                 onSendMessage={handleSendMessage}
                 disabled={!activeConversation}
               />
             </>
-          )}
-
-          {!activeConversation && (
+          ) : (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-muted-foreground">Select a conversation</p>
             </div>
