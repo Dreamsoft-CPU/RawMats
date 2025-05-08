@@ -39,6 +39,37 @@ export async function POST(request: Request) {
       );
     }
 
+    // Get the conversation members to find the recipient
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 },
+      );
+    }
+
+    // Find the recipient (the other member of the conversation)
+    const recipient = conversation.members.find(
+      (member) => member.userId !== userId,
+    );
+
+    if (!recipient) {
+      return NextResponse.json(
+        { error: "Recipient not found" },
+        { status: 404 },
+      );
+    }
+
     // Create the new message
     const newMessage = await prisma.message.create({
       data: {
@@ -56,6 +87,17 @@ export async function POST(request: Request) {
       where: { id: conversationId },
       data: { updatedAt: new Date() },
     });
+
+    // Create notification only for the recipient (not the sender)
+    if (recipient.userId !== userId) {
+      await prisma.notification.create({
+        data: {
+          userId: recipient.userId,
+          title: "New Message",
+          content: `You have a new message from ${newMessage.sender.displayName}`,
+        },
+      });
+    }
 
     // Transform the message for the response
     const responseMessage = {

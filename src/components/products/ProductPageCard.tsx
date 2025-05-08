@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
-import Link from "next/link";
 import FeedbackModal from "../ratings/FeedbackModal";
 
 const ProductPageCard = ({ data }: ProductCardProps) => {

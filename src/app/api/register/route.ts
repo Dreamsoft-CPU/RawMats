@@ -1,4 +1,4 @@
-import { RegisterFormData } from "@/lib/types/register.type";
+import { RegisterSchema } from "@/lib/types/register.type";
 import prisma from "@/utils/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -6,7 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 export const POST = async (request: NextRequest) => {
   const supabase = await createClient();
   try {
-    const data: RegisterFormData = await request.json();
+    const body = await request.json();
+    const data = RegisterSchema.parse(body);
 
     const { data: userData, error: userError } = await supabase.auth.signUp({
       email: data.email,
@@ -14,7 +15,21 @@ export const POST = async (request: NextRequest) => {
     });
 
     if (userError || !userData.user) {
-      throw new Error(userError?.message);
+      return NextResponse.json(
+        { error: true, message: userError?.message || "Failed to create user" },
+        { status: 400 },
+      );
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: true, message: "User with this email already exists" },
+        { status: 400 },
+      );
     }
 
     await prisma.user.create({
@@ -26,13 +41,11 @@ export const POST = async (request: NextRequest) => {
       },
     });
 
-    return NextResponse.json({ status: 204 });
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (e) {
+    console.error("Registration error:", e);
     const message =
-      e instanceof Error ? e.message : "An unexpected error occured";
-    return NextResponse.json(
-      { error: true, message: message },
-      { status: 400 },
-    );
+      e instanceof Error ? e.message : "An unexpected error occurred";
+    return NextResponse.json({ error: true, message }, { status: 400 });
   }
 };
