@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChevronsRight } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -27,7 +28,25 @@ export function PageSwitcher({
   }[];
 }) {
   const { isMobile } = useSidebar();
-  const [activePage, setActivePage] = React.useState(pages[0]);
+  const pathname = usePathname();
+
+  // Find the active page based on URL or default to the first page
+  const [activePage, setActivePage] = React.useState(() => {
+    const matchedPage = pages.find(
+      (page) => pathname === page.url || pathname.startsWith(`${page.url}`)
+    );
+    return matchedPage || pages[0];
+  });
+
+  // Update active page when pathname changes
+  React.useEffect(() => {
+    const matchedPage = pages.find(
+      (page) => pathname === page.url || pathname.startsWith(`${page.url}`)
+    );
+    if (matchedPage) {
+      setActivePage(matchedPage);
+    }
+  }, [pathname, pages]);
 
   return (
     <SidebarMenu>
