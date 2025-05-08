@@ -257,7 +257,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
                                       handleProductSelect(index, product.id)
                                     }
                                   >
-                                    {product.name} - $
+                                    {product.name} - ₱
                                     {product.price?.toFixed(2)}
                                   </DropdownMenuItem>
                                 )
@@ -287,13 +287,13 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
                     <div className="space-y-1">
                       <Label>Unit Price</Label>
                       <div className="p-2 bg-gray-50 border rounded-md">
-                        ${item.productPrice.toFixed(2)}
+                        ₱{item.productPrice.toFixed(2)}
                       </div>
                     </div>
                     <div className="space-y-1">
                       <Label>Total</Label>
                       <div className="p-2 bg-gray-50 border rounded-md font-medium">
-                        ${item.totalPrice.toFixed(2)}
+                        ₱{item.totalPrice.toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -317,7 +317,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
                 Total Amount
               </Label>
               <div className="text-xl font-bold text-primary-500">
-                ${totalAmount.toFixed(2)}
+                ₱{totalAmount.toFixed(2)}
               </div>
             </div>
           </div>

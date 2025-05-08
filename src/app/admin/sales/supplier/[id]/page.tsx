@@ -1,18 +1,18 @@
+import React from "react";
+import prisma from "@/utils/prisma";
+import { notFound } from "next/navigation";
 import AdminSidebar from "@/components/home/AdminSidebar";
 import AdminInset from "@/components/sidebar/insets/AdminInset";
 import { getSidebarData } from "@/utils/server/getSidebarData";
-import React from "react";
-import SalesChart from "@/components/admin/sales/SalesChart";
-import AllSalesReportList from "@/components/admin/sales/AllSalesReportList";
-import prisma from "@/utils/prisma";
+import SupplierSalesReport from "@/components/admin/sales/SupplierSalesReport";
 import { format } from "date-fns";
 
-// Function to aggregate sales data for the chart
-const aggregateSalesData = async () => {
-  // Fetch all sales reports
+// Function to aggregate sales data for a specific supplier
+const aggregateSupplierSalesData = async (supplierId: string) => {
+  // Fetch all sales reports for this supplier
   const salesReports = await prisma.salesReport.findMany({
-    include: {
-      supplier: true,
+    where: {
+      supplierId: supplierId,
     },
     orderBy: {
       createdAt: "asc",
@@ -82,80 +82,79 @@ const aggregateSalesData = async () => {
   };
 };
 
-// Function to get all suppliers with sales reports
-const getSuppliersWithSales = async () => {
-  // Get all suppliers who have at least one sales report
-  const supplierData = await prisma.supplier.findMany({
+// Get supplier data with all sales reports
+const getSupplierData = async (supplierId: string) => {
+  const supplier = await prisma.supplier.findUnique({
     where: {
-      SalesReport: {
-        some: {},
-      },
+      id: supplierId,
+    },
+  });
+
+  if (!supplier) {
+    return null;
+  }
+
+  const salesReports = await prisma.salesReport.findMany({
+    where: {
+      supplierId: supplierId,
     },
     include: {
-      SalesReport: {
-        orderBy: {
-          createdAt: "desc",
+      SalesReportItem: {
+        include: {
+          product: true,
         },
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
-  const suppliers = supplierData.map((supplier) => ({
-    ...supplier,
-    salesReports: supplier.SalesReport.map((report) => ({
-      ...report,
-      createdAt: report.createdAt.toString(),
-    })),
+  // Map the SalesReportItem to salesReportItems to match the expected type
+  const typedSalesReports = salesReports.map((report) => ({
+    ...report,
+    salesReportItems: report.SalesReportItem,
   }));
 
-  // Format data for the component
-  return suppliers.map((supplier) => {
-    const totalSales = supplier.salesReports.reduce(
-      (sum, report) => sum + report.totalAmount,
-      0
-    );
-
-    const lastReportDate =
-      supplier.salesReports.length > 0
-        ? format(new Date(supplier.salesReports[0].createdAt), "MMM dd, yyyy")
-        : "N/A";
-
-    return {
-      id: supplier.id,
-      name: supplier.businessName,
-      reportCount: supplier.salesReports.length,
-      totalSales,
-      lastReportDate,
-    };
-  });
+  return {
+    supplier,
+    salesReports: typedSalesReports,
+  };
 };
 
-const AdminSales = async () => {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+const SupplierSalesPage = async ({ params }: PageProps) => {
   const sidebarData = await getSidebarData();
-  const salesData = await aggregateSalesData();
-  const suppliersWithSales = await getSuppliersWithSales();
+  const supplierData = await getSupplierData(params.id);
+
+  if (!supplierData) {
+    notFound();
+  }
+
+  const salesChartData = await aggregateSupplierSalesData(params.id);
 
   return (
     <div className="flex h-screen w-full">
       <AdminSidebar data={sidebarData} />
       <AdminInset>
-        <div className="p-6 space-y-6">
-          <h1 className="text-2xl font-bold text-primary-500">
-            Sales Dashboard
-          </h1>
-
-          <SalesChart
-            dailyData={salesData.dailyData}
-            weeklyData={salesData.weeklyData}
-            monthlyData={salesData.monthlyData}
-            yearlyData={salesData.yearlyData}
+        <div className="p-6">
+          <SupplierSalesReport
+            supplier={supplierData.supplier}
+            salesReports={supplierData.salesReports}
+            dailyData={salesChartData.dailyData}
+            weeklyData={salesChartData.weeklyData}
+            monthlyData={salesChartData.monthlyData}
+            yearlyData={salesChartData.yearlyData}
           />
-
-          <AllSalesReportList suppliers={suppliersWithSales} />
         </div>
       </AdminInset>
     </div>
   );
 };
 
-export default AdminSales;
+export default SupplierSalesPage;

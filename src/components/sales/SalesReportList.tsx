@@ -41,7 +41,7 @@ const SalesReportList: React.FC<SalesReportListProps> = ({
   supplierId,
 }) => {
   const [reportToDelete, setReportToDelete] = useState<string | null>(null);
-  
+
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(`/api/sales-report/${id}`, {
@@ -93,7 +93,7 @@ const SalesReportList: React.FC<SalesReportListProps> = ({
                   <TableCell>
                     {format(new Date(report.createdAt), "MMM dd, yyyy")}
                   </TableCell>
-                  <TableCell>${report.totalAmount.toFixed(2)}</TableCell>
+                  <TableCell>₱{report.totalAmount.toFixed(2)}</TableCell>
                   <TableCell>{report.salesReportItems.length} items</TableCell>
                   <TableCell className="text-right space-x-2">
                     <EditSalesReportDialog
@@ -113,16 +113,21 @@ const SalesReportList: React.FC<SalesReportListProps> = ({
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Sales Report</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            Delete Sales Report
+                          </AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete this sales report? This action cannot be undone.
+                            Are you sure you want to delete this sales report?
+                            This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
                             className="bg-red-500 text-white hover:bg-red-600"
-                            onClick={() => reportToDelete && handleDelete(reportToDelete)}
+                            onClick={() =>
+                              reportToDelete && handleDelete(reportToDelete)
+                            }
                           >
                             Delete
                           </AlertDialogAction>
