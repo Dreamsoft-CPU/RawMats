@@ -41,6 +41,7 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json(newSalesReport, { status: 201 });
   } catch (e) {
     const message = e instanceof Error ? e.message : "An error occured";
+    console.log("Error creating sales report:", message);
     return NextResponse.json({ error: true, message }, { status: 400 });
   }
 };
