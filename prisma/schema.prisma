@@ -38,18 +38,19 @@ enum Role {
 }
 
 model Supplier {
-  id                String    @id @default(cuid())
-  userId            String    @unique
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  businessPicture   String    @default("/businesses/default.jpg")
+  id                String        @id @default(cuid())
+  userId            String        @unique
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessPicture   String        @default("/businesses/default.jpg")
   businessName      String
   businessLocation  String
-  businessPhone     String    @default("None")
+  businessPhone     String        @default("None")
   businessDocuments String[]
-  bio               String    @default("None")
-  verified          Boolean   @default(false)
-  verifiedDate      DateTime  @updatedAt
+  bio               String        @default("None")
+  verified          Boolean       @default(false)
+  verifiedDate      DateTime      @updatedAt
   Product           Product[]
+  SalesReport       SalesReport[]
 }
 
 model Favorite {
@@ -72,20 +73,21 @@ model AlbumFavorite {
 }
 
 model Product {
-  id           String     @id @default(cuid())
-  name         String
-  description  String
-  image        String     @default("/products/default.jpg")
-  price        Float
-  supplierId   String
-  dateAdded    DateTime   @default(now())
-  verified     Boolean    @default(false)
-  verifiedDate DateTime   @updatedAt
-  supplier     Supplier   @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  favorites    Favorite[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  ratings      Rating[]
+  id              String            @id @default(cuid())
+  name            String
+  description     String
+  image           String            @default("/products/default.jpg")
+  price           Float
+  supplierId      String
+  dateAdded       DateTime          @default(now())
+  verified        Boolean           @default(false)
+  verifiedDate    DateTime          @updatedAt
+  supplier        Supplier          @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  favorites       Favorite[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  ratings         Rating[]
+  SalesReportItem SalesReportItem[]
 }
 
 model Album {
@@ -152,3 +154,24 @@ model Rating {
   @@unique([userId, productId])
 }
 
+model SalesReport {
+  id              String            @id @default(cuid())
+  supplierId      String
+  totalAmount     Float
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  supplier        Supplier          @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  SalesReportItem SalesReportItem[]
+}
+
+model SalesReportItem {
+  id            String      @id @default(cuid())
+  salesReportId String
+  productId     String
+  quantity      Int
+  totalPrice    Float
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  salesReport   SalesReport @relation(fields: [salesReportId], references: [id], onDelete: Cascade)
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
