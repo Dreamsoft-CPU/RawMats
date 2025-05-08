@@ -42,16 +42,17 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
     { productId: "", quantity: 1, productPrice: 0, totalPrice: 0 },
   ]);
 
-  const recalculateTotal = () => {
-    const total = items.reduce((sum, item) => sum + Number(item.totalPrice), 0);
-    setTotalAmount(total);
+  const recalculateTotal = (currentItems: typeof items) => {
+    return currentItems.reduce((sum, item) => sum + Number(item.totalPrice), 0);
   };
 
   const handleAddItem = () => {
-    setItems([
+    const newItems = [
       ...items,
       { productId: "", quantity: 1, productPrice: 0, totalPrice: 0 },
-    ]);
+    ];
+    setItems(newItems);
+    setTotalAmount(recalculateTotal(newItems));
   };
 
   const handleRemoveItem = (index: number) => {
@@ -59,10 +60,11 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
       toast.error("At least one item is required.");
       return;
     }
+
     const newItems = [...items];
     newItems.splice(index, 1);
     setItems(newItems);
-    setTimeout(recalculateTotal, 0);
+    setTotalAmount(recalculateTotal(newItems));
   };
 
   const updateTotalPrice = (index: number, newQuantity: number) => {
@@ -76,7 +78,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
       totalPrice: newTotalPrice,
     };
     setItems(newItems);
-    setTimeout(recalculateTotal, 0);
+    setTotalAmount(recalculateTotal(newItems));
   };
 
   const handleItemChange = (
@@ -106,7 +108,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
         totalPrice,
       };
       setItems(newItems);
-      setTimeout(recalculateTotal, 0);
+      setTotalAmount(recalculateTotal(newItems));
     }
     setSearchQuery("");
   };

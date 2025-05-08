@@ -54,23 +54,25 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
     })
   );
 
-  const recalculateTotal = () => {
-    const total = items.reduce((sum, item) => sum + Number(item.totalPrice), 0);
-    setTotalAmount(total);
+  // Update recalculateTotal to return the calculated value instead of setting state
+  const recalculateTotal = (currentItems: typeof items) => {
+    return currentItems.reduce((sum, item) => sum + Number(item.totalPrice), 0);
   };
 
   const handleAddItem = () => {
-    setItems([
+    const newItems = [
       ...items,
       { productId: "", quantity: 1, productPrice: 0, totalPrice: 0 },
-    ]);
+    ];
+    setItems(newItems);
+    setTotalAmount(recalculateTotal(newItems));
   };
 
   const handleRemoveItem = (index: number) => {
     const newItems = [...items];
     newItems.splice(index, 1);
     setItems(newItems);
-    setTimeout(recalculateTotal, 0);
+    setTotalAmount(recalculateTotal(newItems));
   };
 
   const updateTotalPrice = (index: number, newQuantity: number) => {
@@ -84,7 +86,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
       totalPrice: newTotalPrice,
     };
     setItems(newItems);
-    setTimeout(recalculateTotal, 0);
+    setTotalAmount(recalculateTotal(newItems));
   };
 
   const handleItemChange = (
@@ -114,7 +116,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
         totalPrice,
       };
       setItems(newItems);
-      setTimeout(recalculateTotal, 0);
+      setTotalAmount(recalculateTotal(newItems));
     }
     setSearchQuery("");
   };
