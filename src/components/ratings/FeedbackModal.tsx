@@ -66,6 +66,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
           {[1, 2, 3, 4, 5].map((star) => (
             <Star
               key={star}
+              data-testid="star-icon"
               className="w-8 h-8 cursor-pointer transition-colors duration-300 ease-in-out"
               fill={(hoverRating ?? rating) >= star ? "#FACC15" : "none"}
               stroke={(hoverRating ?? rating) >= star ? "#FACC15" : "gray"}
