@@ -34,6 +34,7 @@ const SupplierSidebar: React.FC<SupplierSidebarProps> = ({
     },
     { title: "Products", url: "/supplier/products", icon: Package },
     { title: "Profile", url: "/supplier/profile", icon: User },
+    { title: "Sales Report", url: "/supplier/sales", icon: PackageSearch },
   ];
 
   const switcherData = [];

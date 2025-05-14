@@ -38,6 +38,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       icon: UserSearch,
     },
     { title: "Product Verification", url: "/admin/products", icon: Package },
+    { title: "Sales Report", url: "/admin/sales", icon: PackageSearch },
   ];
 
   const switcherData = [];
