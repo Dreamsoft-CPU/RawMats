@@ -42,14 +42,14 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
 }) => {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string | number>(
-    "All Stars"
+    "All Stars",
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ratings, setRatings] = useState<Rating[]>(initialRatings);
   const [avgRating, setAvgRating] = useState<number>(averageRating);
   const [reviewCount, setReviewCount] = useState<number>(totalReviews);
   const [userRating, setUserRating] = useState<Rating | null>(
-    initialRatings.find((r) => r.userId === currentUserId) || null
+    initialRatings.find((r) => r.userId === currentUserId) || null,
   );
 
   useEffect(() => {
@@ -63,7 +63,7 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
         setAvgRating(data.averageRating);
         setReviewCount(data.totalReviews);
         setUserRating(
-          data.ratings.find((r: Rating) => r.userId === currentUserId) || null
+          data.ratings.find((r: Rating) => r.userId === currentUserId) || null,
         );
       } catch (error) {
         console.error("Error fetching ratings:", error);
@@ -193,7 +193,7 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
           filteredRatings.map((rating) => (
             <div
               key={rating.id}
-              className="p-5 border border-gray-100 bg-white rounded-2xl bg-white shadow-sm hover:shadow-md transition-all"
+              className="p-5 border border-gray-100 bg-white rounded-2xl  shadow-sm hover:shadow-md transition-all"
             >
               <div className="flex items-start space-x-4">
                 <Avatar className="h-12 w-12">

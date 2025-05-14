@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
-import Link from "next/link";
 import FeedbackModal from "../ratings/FeedbackModal";
 
 const ProductPageCard = ({ data }: ProductCardProps) => {
@@ -20,6 +19,7 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
 
   const totalReviews = data.totalReviews || 0;
   const hasRatings = totalReviews > 0;
@@ -27,6 +27,7 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
 
   const createConversation = async () => {
     try {
+      setIsCreatingConversation(true);
       const response = await fetch("/api/conversations", {
         method: "POST",
         headers: {
@@ -36,10 +37,17 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
       });
 
       if (response.ok) {
-        router.push("/conversations");
+        const { conversation } = await response.json();
+        router.push(`/conversations?conversationId=${conversation.id}`);
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to create conversation");
       }
     } catch (error) {
       console.error("Failed to create conversation:", error);
+      toast.error("Failed to create conversation. Please try again.");
+    } finally {
+      setIsCreatingConversation(false);
     }
   };
 
@@ -100,7 +108,6 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-6xl mx-auto my-4 md:my-8">
       <div className="grid md:grid-cols-2 grid-cols-1 gap-4 md:gap-8">
-        {/* Product Image */}
         <div className="relative aspect-square w-full">
           <Image
             src={data.image || "/placeholder.svg"}
@@ -111,7 +118,6 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
           />
         </div>
 
-        {/* Product Details */}
         <div className="p-4 md:p-6 flex flex-col">
           <div className="flex justify-between items-start">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
@@ -130,7 +136,6 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
             </button>
           </div>
 
-          {/* Ratings Section */}
           <div className="mt-2 flex items-center">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
@@ -218,15 +223,15 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
               onClick={() => {
                 createConversation();
               }}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg font-medium transition-colors"
+              disabled={isCreatingConversation}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Contact Supplier
+              {isCreatingConversation ? "Creating..." : "Contact Supplier"}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Recent Reviews Section - Only show if there are ratings */}
       {data.ratings && data.ratings.length > 0 && (
         <div className="p-4 md:p-6 border-t border-gray-200">
           <div className="flex justify-between items-center mb-4">

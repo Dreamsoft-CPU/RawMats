@@ -34,6 +34,7 @@ export function RegisterForm({
       displayName: "",
       phoneNumber: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -49,13 +50,16 @@ export function RegisterForm({
       setLoading(true);
       const response = await fetch("/api/register", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const { message } = await response.json();
         if (message) showErrorMessage(message);
-        else showErrorMessage("An unexpected error occured");
+        else showErrorMessage("An unexpected error occurred");
       } else {
         setConfirmEmailSent(true);
       }
@@ -64,7 +68,7 @@ export function RegisterForm({
     } catch (e) {
       setLoading(false);
       const message =
-        e instanceof Error ? e.message : "An unexpected error occured";
+        e instanceof Error ? e.message : "An unexpected error occurred";
       showErrorMessage(message);
     }
   };
@@ -231,14 +235,12 @@ export function RegisterForm({
                     </div>
                     <div className="text-center text-sm">
                       You already have an account{" "}
-                      <a href="#" className="underline underline-offset-4">
-                        <Link
-                          href="/login"
-                          className="text-indigo-600 hover:underline"
-                        >
-                          Sign in
-                        </Link>
-                      </a>
+                      <Link
+                        href="/login"
+                        className="text-indigo-600 hover:underline"
+                      >
+                        Sign in
+                      </Link>
                     </div>
                   </div>
                 </form>
@@ -264,7 +266,8 @@ export function RegisterForm({
         and{" "}
         <a href="#" className="text-indigo-600 hover:underline">
           Privacy Policy
-        </a>.
+        </a>
+        .
       </div>
     </div>
   );

@@ -1,32 +1,93 @@
 import prisma from "@/utils/prisma";
 import { getDbUser } from "@/utils/server/getDbUser";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const conversationSchema = z.object({
+  receiverId: z.string().min(1),
+});
 
 export const POST = async (request: Request) => {
   try {
-    const { receiverId } = await request.json();
-    const user = await getDbUser();
+    const body = await request.json();
+    const { receiverId } = conversationSchema.parse(body);
 
-    if ("error" in user && user.error) {
-      throw new Error(user.message);
+    const user = await getDbUser();
+    if ("error" in user) {
+      return NextResponse.json(
+        { error: true, message: user.message },
+        { status: 401 },
+      );
     }
 
-    if (!("error" in user)) {
-      const conversation = await prisma.conversation.create({
+    const existingConversation = await prisma.conversation.findFirst({
+      where: {
+        AND: [
+          {
+            members: {
+              some: {
+                userId: user.id,
+              },
+            },
+          },
+          {
+            members: {
+              some: {
+                userId: receiverId,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (existingConversation) {
+      return NextResponse.json(
+        { conversation: existingConversation },
+        { status: 200 },
+      );
+    }
+
+    const [conversation, sender] = await Promise.all([
+      prisma.conversation.create({
         data: {
           members: {
             create: [{ userId: user.id }, { userId: receiverId }],
           },
         },
-      });
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: user.id },
+        select: { displayName: true },
+      }),
+    ]);
 
-      return NextResponse.json({ conversation }, { status: 201 });
-    }
-  } catch (e) {
-    console.log(e);
-    const message = e instanceof Error ? e.message : "An error occurred";
-    return new Response(JSON.stringify({ error: true, message }), {
-      status: 400,
+    await prisma.notification.create({
+      data: {
+        userId: receiverId,
+        title: "New Conversation",
+        content: `${sender?.displayName} started a conversation with you`,
+      },
     });
+
+    return NextResponse.json({ conversation }, { status: 201 });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "An error occurred";
+    return NextResponse.json({ error: true, message }, { status: 400 });
   }
 };
