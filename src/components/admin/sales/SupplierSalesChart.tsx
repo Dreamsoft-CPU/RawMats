@@ -64,7 +64,7 @@ const SupplierSalesChart: React.FC<SupplierSalesChartProps> = ({
           {supplierName} - Sales Performance
         </CardTitle>
         <CardDescription>
-          Visualization of this supplier's sales over time
+          {"Visualization of this supplier's sales over time"}
         </CardDescription>
       </CardHeader>
       <CardContent>

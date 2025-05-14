@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
 import FeedbackModal from "../ratings/FeedbackModal";
+import Link from "next/link";
 
 const ProductPageCard = ({ data }: ProductCardProps) => {
   const router = useRouter();

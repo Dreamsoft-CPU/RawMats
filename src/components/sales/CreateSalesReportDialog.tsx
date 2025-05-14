@@ -84,7 +84,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
   const handleItemChange = (
     index: number,
     field: string,
-    value: string | number
+    value: string | number,
   ) => {
     if (field === "quantity") {
       updateTotalPrice(index, Number(value));
@@ -93,7 +93,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
 
   const handleProductSelect = (index: number, productId: string) => {
     const selectedProduct = products.find(
-      (product) => product.id === productId
+      (product) => product.id === productId,
     );
     if (selectedProduct) {
       const productPrice = selectedProduct.price || 0;
@@ -127,7 +127,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
       if (
         itemsToSubmit.some(
           (item) =>
-            !item.productId || item.quantity <= 0 || item.totalPrice <= 0
+            !item.productId || item.quantity <= 0 || item.totalPrice <= 0,
         )
       ) {
         throw new Error("All items must have a product and quantity");
@@ -154,6 +154,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
       setOpen(false);
       window.location.reload();
     } catch (error) {
+      console.error("Error creating sales report:", error);
       toast.error("Failed to create sales report");
     } finally {
       setLoading(false);
@@ -162,7 +163,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
 
   const getFilteredProducts = (query: string) => {
     return products.filter((product) =>
-      product.name.toLowerCase().includes(query.toLowerCase())
+      product.name.toLowerCase().includes(query.toLowerCase()),
     );
   };
 
@@ -246,7 +247,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
                                     {product.name} - ₱
                                     {product.price?.toFixed(2)}
                                   </DropdownMenuItem>
-                                )
+                                ),
                               )
                             ) : (
                               <div className="text-center p-2 text-sm text-gray-500">

@@ -51,7 +51,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
         productPrice: productPrice,
         totalPrice: item.totalPrice,
       };
-    })
+    }),
   );
 
   // Update recalculateTotal to return the calculated value instead of setting state
@@ -92,7 +92,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
   const handleItemChange = (
     index: number,
     field: string,
-    value: string | number
+    value: string | number,
   ) => {
     if (field === "quantity") {
       updateTotalPrice(index, Number(value));
@@ -101,7 +101,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
 
   const handleProductSelect = (index: number, productId: string) => {
     const selectedProduct = products.find(
-      (product) => product.id === productId
+      (product) => product.id === productId,
     );
     if (selectedProduct) {
       const productPrice = selectedProduct.price || 0;
@@ -124,7 +124,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
   // Filter products based on search query
   const getFilteredProducts = (query: string) => {
     return products.filter((product) =>
-      product.name.toLowerCase().includes(query.toLowerCase())
+      product.name.toLowerCase().includes(query.toLowerCase()),
     );
   };
 
@@ -148,7 +148,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
       if (
         itemsToSubmit.some(
           (item) =>
-            !item.productId || item.quantity <= 0 || item.totalPrice <= 0
+            !item.productId || item.quantity <= 0 || item.totalPrice <= 0,
         )
       ) {
         throw new Error("All items must have a product and quantity");
@@ -176,6 +176,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
       // Reload the page to refresh the data
       window.location.reload();
     } catch (error) {
+      console.error("Error updating sales report:", error);
       toast.error("Failed to update sales report");
     } finally {
       setLoading(false);
@@ -262,7 +263,7 @@ const EditSalesReportDialog: React.FC<EditSalesReportDialogProps> = ({
                                     {product.name} - ₱
                                     {product.price?.toFixed(2)}
                                   </DropdownMenuItem>
-                                )
+                                ),
                               )
                             ) : (
                               <div className="text-center p-2 text-sm text-gray-500">
