@@ -1,9 +1,10 @@
 import prisma from "@/utils/prisma";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (request: NextRequest) => {
   try {
-    const { id, userId } = await request.json();
+    const { id, userID } = await request.json();
 
     const product = await prisma.product.update({
       where: {
@@ -19,10 +20,12 @@ export const POST = async (request: NextRequest) => {
       data: {
         title: "Product Verified",
         content: `Your product ${product.name} has been verified`,
-        userId,
+        userId: userID,
       },
     });
 
+    revalidatePath("/api/admin/verify/item");
+    revalidatePath("/admin/products");
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (e) {
     const message = e instanceof Error ? e.message : "An error occurred";
