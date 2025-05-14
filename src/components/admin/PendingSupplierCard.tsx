@@ -109,6 +109,7 @@ export function SupplierVerificationComponent({
         throw new Error("Failed to reject supplier");
       }
       toast.success("Supplier rejected successfully.");
+      router.refresh();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "An error occurred";
