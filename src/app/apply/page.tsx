@@ -18,6 +18,10 @@ const SupplierApplication = async () => {
     redirect("/");
   }
 
+  if (user.Supplier[0]) {
+    redirect("/");
+  }
+
   return (
     <div className="flex h-screen w-full ">
       <HomeSidebar data={sidebarData} />
