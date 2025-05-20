@@ -12,9 +12,12 @@ export const getDbUser = async () => {
       throw new Error(error?.message || "User not found!");
     }
 
-    const databaseUser = await prisma.user.findUnique({
+    const databaseUser = await prisma.user.findFirst({
       where: {
-        email: data.user.email,
+        email: {
+          equals: data.user.email,
+          mode: "insensitive",
+        },
       },
       include: {
         Supplier: {
