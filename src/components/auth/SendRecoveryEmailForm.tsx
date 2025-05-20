@@ -77,8 +77,8 @@ export function SendRecoveryEmailForm({
                 <div className="flex items-center flex-col text-sm gap-2">
                   Check your inbox and spam to view your recovery link
                   <div>
-                    <Button>
-                      <Link href="/login">Go to Login</Link>
+                    <Button className="bg-[#6AB0E3]">
+                      <Link href="/">Go Back</Link>
                     </Button>
                   </div>
                 </div>

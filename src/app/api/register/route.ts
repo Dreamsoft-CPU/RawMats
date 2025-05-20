@@ -21,8 +21,13 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email: data.email },
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: data.email,
+          mode: "insensitive",
+        },
+      },
     });
 
     if (existingUser) {

@@ -67,9 +67,12 @@ export const POST = async (request: NextRequest) => {
         uploadedFilePaths.push(fileData.path);
       }
 
-      const userData = await prisma.user.findUnique({
+      const userData = await prisma.user.findFirst({
         where: {
-          email: user.email,
+          email: {
+            equals: user.email,
+            mode: "insensitive",
+          },
         },
       });
 

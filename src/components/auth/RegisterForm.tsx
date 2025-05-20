@@ -84,7 +84,7 @@ export function RegisterForm({
                 <div className="flex items-center flex-col text-sm gap-2">
                   Check your email to confirm your registration!
                   <div>
-                    <Button>
+                    <Button className="bg-[#6AB0E3]">
                       <Link href="/login">Go to Home</Link>
                     </Button>
                   </div>

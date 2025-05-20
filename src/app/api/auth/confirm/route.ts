@@ -21,10 +21,13 @@ export async function GET(request: NextRequest) {
       if (!error) {
         // redirect user to specified redirect URL or root of app
         redirect(next);
+      } else {
+        throw new Error(error.message);
       }
     }
   } catch (error) {
-    console.error("Error verifying OTP:", error);
-    redirect("/error?message=Invalid%20token%20or%20type");
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
+    redirect(`/error?message=${encodeURIComponent(message)}`);
   }
 }

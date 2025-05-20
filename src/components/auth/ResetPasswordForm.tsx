@@ -81,8 +81,8 @@ export function ResetPasswordForm({
                 <div className="flex items-center flex-col text-sm gap-2">
                   Your password has been reset
                   <div>
-                    <Button>
-                      <Link href="/">Go to Home</Link>
+                    <Button className="bg-[#6AB0E3]">
+                      <Link href="/">Go Back</Link>
                     </Button>
                   </div>
                 </div>

@@ -103,7 +103,10 @@ export function SupplierRegistrationForm({
                 <div className="flex items-center flex-col text-sm gap-2">
                   <p>Check your notifications from time to time</p>
                   <p>if you have been verified!</p>
-                  <Button onClick={() => router.push("/")}>
+                  <Button
+                    className="bg-[#6AB0E3]"
+                    onClick={() => router.push("/")}
+                  >
                     Go back to Home
                   </Button>
                 </div>
