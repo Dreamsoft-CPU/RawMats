@@ -117,9 +117,9 @@ export function NotificationPopover({ userData }: UserDataProps) {
                         >
                           <AccordionTrigger className="py-0 hover:no-underline">
                             <p className="text-sm font-medium leading-none text-left">
-                              {notification.content.length > 50
-                                ? `${notification.content.substring(0, 50)}...`
-                                : notification.content}
+                              {notification.title.length > 50
+                                ? `${notification.title.substring(0, 50)}...`
+                                : notification.title}
                             </p>
                           </AccordionTrigger>
                           <AccordionContent>
