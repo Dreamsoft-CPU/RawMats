@@ -255,7 +255,7 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
           <div>
             <strong className="text-gray-700">Location:</strong>
             <p className="text-blue-500 text-xs mt-1 cursor-pointer hover:underline">
-              {supplier?.businessLocation || "No location added"}
+              {supplier?.locationName || "No location added"}
             </p>
           </div>
         </div>
