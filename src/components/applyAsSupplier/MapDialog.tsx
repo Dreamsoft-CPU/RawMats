@@ -4,20 +4,23 @@ import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { MapPin } from "lucide-react";
 import MapComponent from "./MapComponent";
-import { MapComponentProps } from "@/lib/types/mapComponent.type";
 
-const MapDialog: React.FC<MapComponentProps> = ({ onConfirmLocation }) => {
+interface MapDialogProps {
+  onConfirmLocation: (location: string, locationName: string) => void;
+}
+
+const MapDialog: React.FC<MapDialogProps> = ({ onConfirmLocation }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleConfirmLocation = (location: string) => {
-    setIsOpen(!isOpen);
-    onConfirmLocation(location);
+  const handleConfirmLocation = (location: string, locationName: string) => {
+    setIsOpen(false);
+    onConfirmLocation(location, locationName);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button onClick={() => setIsOpen(!isOpen)}>
+        <Button onClick={() => setIsOpen(true)}>
           <MapPin />
         </Button>
       </DialogTrigger>

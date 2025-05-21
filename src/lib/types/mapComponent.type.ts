@@ -1,3 +1,3 @@
 export interface MapComponentProps {
-  onConfirmLocation: (location: string) => void;
+  onConfirmLocation: (location: string, locationName: string) => void;
 }
