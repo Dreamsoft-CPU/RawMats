@@ -133,7 +133,12 @@ const FileUploadWithPreview: React.FC<FileUploadProps> = ({
 
   return (
     <FormItem>
-      <FormLabel>Business Documents</FormLabel>
+      <FormLabel>
+        Business Documents
+        <span className="block text-xs text-gray-500 font-normal mt-1">
+          DTI Registration, BIR Registration, or Proof of Business
+        </span>
+      </FormLabel>
       <FormControl>
         <Input
           type="file"

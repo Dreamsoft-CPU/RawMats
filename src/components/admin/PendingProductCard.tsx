@@ -88,6 +88,7 @@ export function ItemVerificationComponent({ products }: ItemVerificationProps) {
         throw new Error("Failed to reject product");
       }
       toast.success("Product rejected successfully.");
+      router.refresh();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "An error occurred";

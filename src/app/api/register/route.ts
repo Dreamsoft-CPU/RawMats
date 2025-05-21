@@ -21,8 +21,13 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email: data.email },
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: data.email,
+          mode: "insensitive",
+        },
+      },
     });
 
     if (existingUser) {
@@ -32,10 +37,12 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
+    const formattedEmail = data.email.toLowerCase();
+
     await prisma.user.create({
       data: {
         id: userData.user.id,
-        email: data.email,
+        email: formattedEmail,
         displayName: data.displayName,
         phoneNumber: data.phoneNumber,
       },

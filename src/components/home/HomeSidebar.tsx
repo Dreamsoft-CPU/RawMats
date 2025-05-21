@@ -40,7 +40,11 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({
       url: "/conversations",
       icon: Mail,
     },
-    { title: "Help Center", url: "/help", icon: HelpCircle },
+    {
+      title: "Help Center",
+      url: "https://www.dti.gov.ph/konsyumer/complaints/",
+      icon: HelpCircle,
+    },
   ];
 
   const switcherData = [];

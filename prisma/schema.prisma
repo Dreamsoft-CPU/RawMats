@@ -44,6 +44,7 @@ model Supplier {
   businessPicture   String        @default("/businesses/default.jpg")
   businessName      String
   businessLocation  String
+  locationName      String        @default("None")
   businessPhone     String        @default("None")
   businessDocuments String[]
   bio               String        @default("None")

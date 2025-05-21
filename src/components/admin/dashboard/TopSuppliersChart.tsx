@@ -22,6 +22,7 @@ import { toast } from "sonner";
 type SupplierData = {
   businessName: string;
   businessLocation: string;
+  locationName: string;
   productCount: number;
 };
 
@@ -60,7 +61,7 @@ export function TopSuppliersChart({ dateRange }: { dateRange?: string }) {
   const chartData = supplierData.map((supplier) => ({
     name: supplier.businessName || "Unknown",
     productCount: supplier.productCount,
-    location: supplier.businessLocation || "Unknown",
+    location: supplier.locationName || "Unknown",
   }));
 
   return (

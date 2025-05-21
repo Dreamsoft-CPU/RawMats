@@ -13,9 +13,17 @@ export const getSidebarData = async () => {
       throw new Error(error?.message || "User not found!");
     }
 
-    const userData = await prisma.user.findUnique({
+    // Ensure email is available before querying
+    if (!data.user.email) {
+      throw new Error("User email not found!");
+    }
+
+    const userData = await prisma.user.findFirst({
       where: {
-        email: data.user.email,
+        email: {
+          equals: data.user.email,
+          mode: "insensitive",
+        },
       },
       include: {
         Supplier: true,

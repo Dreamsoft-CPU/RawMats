@@ -109,6 +109,7 @@ export function SupplierVerificationComponent({
         throw new Error("Failed to reject supplier");
       }
       toast.success("Supplier rejected successfully.");
+      router.refresh();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "An error occurred";
@@ -145,7 +146,7 @@ export function SupplierVerificationComponent({
                   href={supplier.businessLocation}
                   target="_blank"
                 >
-                  {supplier.businessLocation}
+                  {supplier.locationName}
                 </a>
               </div>
             </div>

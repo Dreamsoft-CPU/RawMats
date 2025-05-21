@@ -16,6 +16,7 @@ export const POST = async (request: NextRequest) => {
     const businessName = formData.get("businessName") as string;
     const businessLocation = formData.get("businessLocation") as string;
     const businessPhone = formData.get("businessPhone") as string;
+    const locationName = formData.get("locationName") as string;
     const files = formData.getAll("businessDocuments") as File[];
 
     // Validate the data using your schema
@@ -67,9 +68,12 @@ export const POST = async (request: NextRequest) => {
         uploadedFilePaths.push(fileData.path);
       }
 
-      const userData = await prisma.user.findUnique({
+      const userData = await prisma.user.findFirst({
         where: {
-          email: user.email,
+          email: {
+            equals: user.email,
+            mode: "insensitive",
+          },
         },
       });
 
@@ -81,6 +85,7 @@ export const POST = async (request: NextRequest) => {
           businessName: validatedData.businessName,
           businessLocation: validatedData.businessLocation,
           businessPhone: validatedData.businessPhone,
+          locationName: locationName || "None", // Use the provided location name
           businessDocuments: uploadedFilePaths,
         },
       });

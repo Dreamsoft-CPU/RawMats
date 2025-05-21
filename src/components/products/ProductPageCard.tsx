@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
 import FeedbackModal from "../ratings/FeedbackModal";
+import Link from "next/link";
 
 const ProductPageCard = ({ data }: ProductCardProps) => {
   const router = useRouter();
@@ -197,12 +198,12 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
                   </Link>
                 </p>
                 <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(data.supplier.businessLocation)}`}
+                  href={`${data.supplier.businessLocation}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs md:text-sm text-blue-600 hover:underline"
                 >
-                  {data.supplier.businessLocation}
+                  {data.supplier.locationName}
                 </a>
               </div>
             </div>

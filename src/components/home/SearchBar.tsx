@@ -62,7 +62,7 @@ const SearchBar = () => {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [query]);
+  }, [query, router]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -17,6 +17,7 @@ export const SupplierSchema = z.object({
   userId: z.string(),
   businessPicture: z.string().default("/businesses/default.jpg"),
   businessName: z.string(),
+  locationName: z.string(),
   businessLocation: z.string(),
   businessPhone: z.string().default("None"),
   businessDocuments: z.array(z.string()),
