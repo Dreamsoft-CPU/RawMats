@@ -133,7 +133,7 @@ const HomePage = async ({
                 </h2>
                 <div className="relative">
                   <div className="flex pb-4 gap-4 items-center justify-center">
-                    <ScrollArea className="w-[80vw] overflow-hidden items-center">
+                    <ScrollArea className="w-full max-w-[calc(100vw-2rem)] md:max-w-[calc(100vw-4rem)] lg:max-w-[calc(100vw-8rem)] overflow-hidden items-center">
                       <div className="flex space-x-4">
                         {newArrivalsProducts.map((product) => (
                           <div
@@ -175,7 +175,7 @@ const HomePage = async ({
             </div>
             {browseCatalogueProducts.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 items-center justify-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {browseCatalogueProducts.map((product) => (
                     <ProductCard
                       key={product.id}
