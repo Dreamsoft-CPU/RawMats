@@ -350,7 +350,7 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
       {/* Image Cropper */}
       {showCropper && cropImage && (
         <Dialog open={showCropper} onOpenChange={setShowCropper}>
-          <DialogContent className="p-0 bg-transparent border-none shadow-none max-w-4xl">
+          <DialogContent className="p-0 bg-transparent border-none shadow-none min-w-fit">
             <ImageCropper
               image={cropImage as string}
               onCropComplete={handleCropComplete}
