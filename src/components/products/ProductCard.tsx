@@ -42,7 +42,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const hasRatings = reviewCount > 0;
 
   return (
-    <Card className="w-full max-w-52 h-[420px] hover:border-primary transition-transform duration-200 hover:scale-105">
+    <Card className="w-full max-w-52 h-[420px] border border-blue-200 hover:border-primary transition-transform duration-200 hover:scale-105">
       <CardHeader className="p-0">
         <div
           onClick={() => router.push(`/product/${id}`)}
@@ -73,7 +73,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
       </CardHeader>
       <CardContent onClick={() => router.push(`/product/${id}`)}>
-        <p className="text-primary font-bold text-lg">₱{price.toFixed(2)}</p>
+        <p className="inline-block text-sm font-semibold text-black bg-blue-100 rounded-full px-3 py-1">
+          ₱{price.toFixed(2)}
+        </p>{" "}
       </CardContent>
       <CardFooter>
         <TooltipProvider>
@@ -86,9 +88,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 <StarFilledIcon
                   className={hasRatings ? "text-yellow-400" : "text-gray-300"}
                 />
-                {hasRatings
-                  ? `${averageRating?.toFixed(1) || "0.0"}`
-                  : "No ratings yet"}
+                {hasRatings ? (
+                  <>
+                    {averageRating?.toFixed(1) || "0.0"}{" "}
+                    <span className="text-sm text-black">
+                      ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    (No reviews)
+                  </span>
+                )}
               </p>
             </TooltipTrigger>
             <TooltipContent>

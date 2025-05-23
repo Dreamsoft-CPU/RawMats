@@ -14,8 +14,7 @@ import Link from "next/link";
 const ProductPageCard = ({ data }: ProductCardProps) => {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(
-    data.favorites?.some((favorite) => favorite.userId === data.userId) ||
-      false,
+    data.favorites?.some((favorite) => favorite.userId === data.userId) || false
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,14 +105,26 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-6xl mx-auto my-4 md:my-8">
-      <div className="grid md:grid-cols-2 grid-cols-1 gap-4 md:gap-8">
-        <div className="relative aspect-square w-full">
+    <div
+      className="
+      bg-white rounded-xl 
+      w-full max-w-4xl
+      mx-auto my-20
+      overflow-hidden
+      border border-gray-100
+      shadow-[0_4px_15px_rgba(0,0,0,0.1),0_2px_10px_rgba(0,0,0,0.06)]
+      transition-shadow duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12),0_4px_20px_rgba(0,0,0,0.08)]
+      min-h-[420px]
+      flex flex-col
+    "
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 w-full h-full">
+        <div className="relative w-full h-full">
           <Image
             src={data.image || "/placeholder.svg"}
             alt={data.name}
             fill
-            className="object-cover"
+            className="object-cover rounded-lg"
             priority
           />
         </div>
@@ -171,8 +182,8 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
             </button>
           </div>
 
-          <div className="mt-3 md:mt-4">
-            <span className="text-2xl md:text-3xl font-bold text-indigo-600">
+          <div>
+            <span className="inline-block text-sm font-semibold text-black bg-blue-100 rounded-full px-3 py-1 mt-4">
               ₱{data.price.toFixed(2)}
             </span>
           </div>
@@ -218,13 +229,13 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
             </p>
           </div>
 
-          <div className="mt-auto pt-4 md:pt-6">
+          <div className="flex">
             <button
               onClick={() => {
                 createConversation();
               }}
               disabled={isCreatingConversation}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-auto mt-6 border border-indigo-300 hover:bg-indigo-100 text-black px-3 md:px-3 py-1.5 md:py-2 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCreatingConversation ? "Creating..." : "Contact Supplier"}
             </button>
@@ -232,6 +243,7 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
         </div>
       </div>
 
+      {/* Ratings section BELOW product info, still inside main container */}
       {data.ratings && data.ratings.length > 0 && (
         <div className="p-4 md:p-6 border-t border-gray-200">
           <div className="flex justify-between items-center mb-4">
@@ -246,7 +258,7 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
             </Link>
           </div>
           <div className="space-y-4">
-            {data.ratings.map((rating) => (
+            {data.ratings.slice(0, 2).map((rating) => (
               <div
                 key={rating.id}
                 className="border-b border-gray-200 pb-4 last:border-b-0"
@@ -291,6 +303,7 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
         </div>
       )}
 
+      {/* Modal */}
       <FeedbackModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

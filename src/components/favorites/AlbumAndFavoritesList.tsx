@@ -24,11 +24,11 @@ const AlbumAndFavoritesList: React.FC<AlbumAndFavoritesListProps> = ({
   const itemsPerPage = 12;
 
   const totalPages = Math.ceil(
-    albumAndFavoriteData.Favorite.length / itemsPerPage,
+    albumAndFavoriteData.Favorite.length / itemsPerPage
   );
   const paginatedFavorites = albumAndFavoriteData.Favorite.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const handleDragStart = (favorite: Favorite) => {
@@ -67,7 +67,6 @@ const AlbumAndFavoritesList: React.FC<AlbumAndFavoritesListProps> = ({
   return (
     <div className="space-y-6 w-full">
       <h1 className="text-2xl font-bold">My Collections</h1>
-
       <div className="space-y-8">
         {/* Albums Section */}
         <section className="space-y-4">
@@ -111,10 +110,9 @@ const AlbumAndFavoritesList: React.FC<AlbumAndFavoritesListProps> = ({
         </section>
 
         {/* Favorites Section */}
-        <section className="space-y-4">
+        <section className="space-y-4 ">
           <h2 className="text-xl font-semibold">Favorites</h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="justify-center items-center grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {paginatedFavorites.map((favorite) => (
               <motion.div
                 key={favorite.id}
