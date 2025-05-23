@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ImageUp, Loader, Pencil, Star, X } from "lucide-react";
+import { ImageUp, Loader, Pencil, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,9 +21,6 @@ import Link from "next/link";
 
 const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
   const supplier = userData.Supplier[0]; // Assuming we're showing the first supplier
-  const productCount = userData.Supplier[0].Product.filter(
-    (product) => product.verified,
-  ).length;
   const [bio, setBio] = useState(supplier?.bio || "");
   const [phone, setPhone] = useState(supplier?.businessPhone || "");
   const [isBioModalOpen, setIsBioModalOpen] = useState(false);
@@ -183,37 +180,6 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
                 </Button>
               </Link>
             </div>
-          </div>
-          <div className="flex items-center gap-1 mt-1">
-            <div className="flex relative">
-              <div className="flex">
-                {[...Array(5)].map((_, index) => (
-                  <Star
-                    key={`bg-${index}`}
-                    size={16}
-                    className="text-gray-200"
-                  />
-                ))}
-              </div>
-              <div className="grid grid-cols-5 absolute top-0 left-0">
-                {[...Array(5)].map((_, index) => (
-                  <div
-                    key={`fg-${index}`}
-                    style={{ width: `${index === 4 ? "60" : "100"}%` }}
-                    className="overflow-hidden"
-                  >
-                    <Star
-                      size={16}
-                      className="fill-yellow-400 text-yellow-400"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <span className="text-xs text-gray-600">
-              ({productCount} product{productCount !== 1 && "s"} •{" "}
-              {Number(1432).toLocaleString()} reviews)
-            </span>
           </div>
           {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
         </div>

@@ -21,7 +21,11 @@ export const getSupplierData = async (username: string) => {
       },
       include: {
         user: true,
-        Product: true,
+        Product: {
+          include: {
+            ratings: true,
+          },
+        },
       },
     });
 
