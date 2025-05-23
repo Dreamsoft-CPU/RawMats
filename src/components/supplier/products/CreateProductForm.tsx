@@ -38,7 +38,7 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
     resolver: zodResolver(ProductFormDataSchema),
     defaultValues: {
       name: "",
-      price: 0,
+      price: undefined,
       description: "",
       supplierId: supplierId,
     },
@@ -105,7 +105,7 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
       <DialogTrigger asChild>
         <Button>Create New Product</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] min-w-fit">
+      <DialogContent className="sm:max-w-[500px] min-w-fit max-h-screen overflow-y-auto">
         {showImageCropper && selectedImage ? (
           <ImageCropper
             image={selectedImage}
