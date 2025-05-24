@@ -19,6 +19,7 @@ import {
 } from "../ui/form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 export function LoginForm({
   className,
@@ -26,6 +27,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const form = useForm<LoginFormData>({
@@ -125,12 +127,25 @@ export function LoginForm({
                         </Link>
                       </div>
                       <FormControl>
-                        <Input
-                          {...field}
-                          type="password"
-                          placeholder="********"
-                          className="bg-white border border-indigo-800 rounded-2xl px-4 py-2 shadow-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        />
+                        <div className="relative">
+                          <Input
+                            {...field}
+                            type={showPassword ? "text" : "password"}
+                            placeholder="********"
+                            className="bg-white border border-indigo-800 rounded-2xl px-4 py-2 shadow-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5" />
+                            ) : (
+                              <Eye className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormDescription>Enter your password</FormDescription>
                       <FormMessage />
@@ -206,7 +221,8 @@ export function LoginForm({
         and{" "}
         <Link href="#" className="text-indigo-600 hover:underline">
           Privacy Policy
-        </Link>.
+        </Link>
+        .
       </div>
     </div>
   );

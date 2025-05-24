@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/form";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-export const phoneSchema = z.object({
+const phoneSchema = z.object({
   phone: z
     .string()
     .refine(isValidPhoneNumber, { message: "Invalid phone number" }),
@@ -373,7 +373,7 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
                         defaultCountry="PH"
                         international
                         countryCallingCodeEditable={false}
-                        placeholder="Enter a phone number"
+                        placeholder="Enter your phone number"
                         {...field}
                       />
                     </FormControl>
