@@ -226,17 +226,42 @@ async function getCroppedImg(
     throw new Error("No 2d context");
   }
 
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  const rotRad = (rotation * Math.PI) / 180;
 
-  // Draw image with rotation
-  ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.rotate((rotation * Math.PI) / 180);
-  ctx.translate(-canvas.width / 2, -canvas.height / 2);
+  // calculate bounding box of the rotated image
+  const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
+    image.width,
+    image.height,
+    rotation,
+  );
 
-  ctx.drawImage(
-    image,
+  // set canvas size to match the bounding box
+  canvas.width = bBoxWidth;
+  canvas.height = bBoxHeight;
+
+  // translate canvas context to a central location to allow rotating and flipping around the center
+  ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
+  ctx.rotate(rotRad);
+  ctx.translate(-image.width / 2, -image.height / 2);
+
+  // draw rotated image
+  ctx.drawImage(image, 0, 0);
+
+  const croppedCanvas = document.createElement("canvas");
+
+  const croppedCtx = croppedCanvas.getContext("2d");
+
+  if (!croppedCtx) {
+    throw new Error("No 2d context");
+  }
+
+  // Set the size of the cropped canvas
+  croppedCanvas.width = pixelCrop.width;
+  croppedCanvas.height = pixelCrop.height;
+
+  // Draw the cropped image onto the new canvas
+  croppedCtx.drawImage(
+    canvas,
     pixelCrop.x,
     pixelCrop.y,
     pixelCrop.width,
@@ -247,11 +272,32 @@ async function getCroppedImg(
     pixelCrop.height,
   );
 
+  // canvas.width = pixelCrop.width;
+  // canvas.height = pixelCrop.height;
+
+  // // Draw image with rotation
+  // ctx.save();
+  // ctx.translate(canvas.width / 2, canvas.height / 2);
+  // ctx.rotate((rotation * Math.PI) / 180);
+  // ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+  // ctx.drawImage(
+  //   image,
+  //   pixelCrop.x,
+  //   pixelCrop.y,
+  //   pixelCrop.width,
+  //   pixelCrop.height,
+  //   0,
+  //   0,
+  //   pixelCrop.width,
+  //   pixelCrop.height,
+  // );
+
   ctx.restore();
 
   // Create a blob from the canvas
   return new Promise((resolve) => {
-    canvas.toBlob(
+    croppedCanvas.toBlob(
       (blob) => {
         if (blob) {
           resolve(blob);
@@ -271,4 +317,15 @@ function createImage(url: string): Promise<HTMLImageElement> {
     image.setAttribute("crossOrigin", "anonymous");
     image.src = url;
   });
+}
+
+function rotateSize(width: number, height: number, rotation: number) {
+  const rotRad = (rotation * Math.PI) / 180;
+
+  return {
+    width:
+      Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
+    height:
+      Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
+  };
 }

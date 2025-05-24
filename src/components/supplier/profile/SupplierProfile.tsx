@@ -168,8 +168,7 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
 
               const avgRatingNumber = Math.floor(averageRating);
               const avgRatingDecimal = (averageRating - avgRatingNumber) * 100;
-              console.log(avgRatingNumber, avgRatingDecimal);
-              console.log(averageRating);
+
               return (
                 <Card
                   key={product.id}
