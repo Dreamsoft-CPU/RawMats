@@ -163,7 +163,7 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
             onChange={handleFileChange}
           />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 w-full">
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-lg font-semibold text-gray-800">

@@ -19,6 +19,32 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
   ).length;
   const router = useRouter();
 
+  const calculateOverallRating = ({ data }: SupplierInfoProps) => {
+    let totalReviews = 0;
+    let totalWeightedScore = 0;
+
+    data.Product.forEach((product) => {
+      if (product.ratings.length > 0) {
+        const productAverage =
+          product.ratings.reduce((sum, rating) => sum + rating.rating, 0) /
+          product.ratings.length;
+        totalReviews += product.ratings.length;
+        totalWeightedScore += productAverage * product.ratings.length;
+      }
+    });
+
+    const overallAverage =
+      totalReviews > 0 ? totalWeightedScore / totalReviews : 0;
+
+    return {
+      totalReviews,
+      overallAverage,
+    };
+  };
+
+  const { totalReviews, overallAverage } = calculateOverallRating({ data });
+  console.log(overallAverage);
+
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg space-y-4 text-sm w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -60,32 +86,42 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
           <div className="flex items-center gap-1 mt-1">
             <div className="flex relative">
               <div className="flex">
-                {[...Array(5)].map((_, index) => (
-                  <Star
-                    key={`bg-${index}`}
-                    size={16}
-                    className="text-gray-200"
-                  />
-                ))}
-              </div>
-              <div className="grid grid-cols-5 absolute top-0 left-0">
-                {[...Array(5)].map((_, index) => (
-                  <div
-                    key={`fg-${index}`}
-                    style={{ width: `${index === 4 ? "35" : "100"}%` }}
-                    className="overflow-hidden"
-                  >
-                    <Star
-                      size={16}
-                      className="fill-yellow-400 text-yellow-400"
-                    />
-                  </div>
-                ))}
+                {[...Array(5)].map((_, index) => {
+                  const isFilled = index < Math.floor(overallAverage || 0);
+                  const isPartial =
+                    index === Math.floor(overallAverage || 0) &&
+                    (overallAverage || 0) % 1 > 0;
+
+                  return (
+                    <div key={index} className="relative">
+                      <Star size={16} className="text-gray-200" />
+                      {isFilled && (
+                        <Star
+                          size={16}
+                          className="absolute top-0 left-0 fill-yellow-400 text-yellow-400"
+                        />
+                      )}
+                      {isPartial && (
+                        <div
+                          className="absolute top-0 left-0 overflow-hidden"
+                          style={{
+                            width: `${((overallAverage || 0) % 1) * 100}%`,
+                          }}
+                        >
+                          <Star
+                            size={16}
+                            className="fill-yellow-400 text-yellow-400"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <span className="text-xs text-gray-600">
               ({productCount} verified product{productCount !== 1 && "s"} •{" "}
-              {Number(1432).toLocaleString()} reviews)
+              {totalReviews} total review{totalReviews !== 1 && "s"})
             </span>
           </div>
         </div>
@@ -155,19 +191,26 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
         <h2 className="text-base font-medium text-gray-800">
           Verified Products
         </h2>
-        <div className="grid sm:grid-cols-5 gap-4">
-          {data.Product.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center xl:grid-cols-4 gap-4">
+          {productCount > 0 ? (
             data.Product.map((product) => {
+              if (!product.verified) return null;
+
               let averageRating = 0;
 
               for (let i = 0; i < product.ratings.length; i++) {
                 averageRating += product.ratings[i].rating;
               }
 
-              averageRating = averageRating / product.ratings.length;
+              const formatNumber = (num: number) => {
+                if (num >= 1000000)
+                  return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+                if (num >= 1000)
+                  return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+                return num.toString();
+              };
 
-              const avgRatingNumber = Math.floor(averageRating);
-              const avgRatingDecimal = (averageRating - avgRatingNumber) * 100;
+              averageRating = averageRating / product.ratings.length;
 
               return (
                 <Card
@@ -191,35 +234,61 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
                         {product.name}
                         <div className="flex relative items-center w-full">
                           <div className="flex">
-                            {[...Array(5)].map((_, index) => (
-                              <Star
-                                key={`bg-${index}`}
-                                size={16}
-                                className="text-gray-200"
-                              />
-                            ))}
-                          </div>
-                          <div className="grid grid-cols-5 absolute top-0 left-0">
-                            {!Number.isNaN(averageRating) &&
-                              [...Array(avgRatingNumber + 1)].map(
-                                (_, index) => (
-                                  <div
-                                    key={`fg-${index}`}
-                                    style={{
-                                      width: `${index === avgRatingNumber ? String(avgRatingDecimal) : "100"}%`,
-                                    }}
-                                    className="overflow-hidden"
-                                  >
+                            {[...Array(5)].map((_, index) => {
+                              const isFilled =
+                                index < Math.floor(averageRating || 0);
+                              const isPartial =
+                                index === Math.floor(averageRating || 0) &&
+                                (averageRating || 0) % 1 > 0;
+
+                              return (
+                                <div key={index} className="relative">
+                                  <Star size={16} className="text-gray-200" />
+                                  {isFilled && (
                                     <Star
                                       size={16}
-                                      className="fill-yellow-400 text-yellow-400"
+                                      className="absolute top-0 left-0 fill-yellow-400 text-yellow-400"
                                     />
-                                  </div>
-                                ),
-                              )}
+                                  )}
+                                  {isPartial && (
+                                    <div
+                                      className="absolute top-0 left-0 overflow-hidden"
+                                      style={{
+                                        width: `${((averageRating || 0) % 1) * 100}%`,
+                                      }}
+                                    >
+                                      <Star
+                                        size={16}
+                                        className="fill-yellow-400 text-yellow-400"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
-                          <div className="absolute right-0 text-gray-600 ml-2">
-                            {averageRating ? averageRating.toFixed(1) : "N/A"}
+                          <div
+                            className={`ml-auto text-gray-600 ${averageRating ? "text-base" : "text-xs"}`}
+                          >
+                            {averageRating ? (
+                              <div className="text-right">
+                                <div className="text-sm font-extrabold text-gray-800">
+                                  {averageRating.toFixed(1)}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {formatNumber(product.ratings.length)}{" "}
+                                  {product.ratings.length === 1
+                                    ? "review"
+                                    : "reviews"}
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                No
+                                <br />
+                                Reviews
+                              </>
+                            )}
                           </div>
                         </div>
                       </CardTitle>
@@ -237,7 +306,7 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
               );
             })
           ) : (
-            <p className="text-gray-400 italic text-xs mt-1">
+            <p className="text-gray-600 text-sm mt-1">
               No verified products yet.
             </p>
           )}
