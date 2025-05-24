@@ -23,6 +23,30 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
   const totalReviews = data.totalReviews || 0;
   const hasRatings = totalReviews > 0;
   const averageRating = data.averageRating || 0;
+  const [userRating, setUserRating] = useState(data.userRating); // if you pass this in props
+
+  const handleDeleteRating = async () => {
+    if (!confirm("Are you sure you want to delete your rating?")) return;
+
+    try {
+      const response = await fetch("/api/ratings", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId: data.id }),
+      });
+
+      if (!response.ok) throw new Error("Failed to delete rating");
+
+      toast.success("Rating deleted successfully");
+      setUserRating(null); // update local state
+      router.refresh(); // refresh the page to reflect changes
+    } catch (error) {
+      console.error("Error deleting rating:", error);
+      toast.error("Failed to delete rating");
+    }
+  };
 
   const createConversation = async () => {
     try {
@@ -263,25 +287,37 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
                 key={rating.id}
                 className="border-b border-gray-200 pb-4 last:border-b-0"
               >
-                <div className="flex items-center mb-2">
-                  <Avatar className="h-8 w-8 mr-2">
-                    <AvatarImage
-                      src={rating.user.profilePicture}
-                      alt={rating.user.displayName}
-                    />
-                    <AvatarFallback>
-                      {rating.user.displayName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-sm">
-                      {rating.user.displayName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatDate(rating.createdAt)}
-                    </p>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage
+                        src={rating.user.profilePicture}
+                        alt={rating.user.displayName}
+                      />
+                      <AvatarFallback>
+                        {rating.user.displayName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium text-sm">
+                        {rating.user.displayName}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatDate(rating.createdAt)}
+                      </p>
+                    </div>
                   </div>
+                  {/* Show delete icon only for the current user's rating */}
+                  {userRating && userRating.id === rating.id && (
+                    <button
+                      onClick={handleDeleteRating}
+                      className="text-xs border border-red-500 text-red-500 px-2 py-0.5 rounded-md hover:bg-red-50 transition"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
+
                 <div className="flex mb-1">
                   {[...Array(5)].map((_, i) => (
                     <Star

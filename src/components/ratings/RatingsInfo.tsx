@@ -42,14 +42,14 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
 }) => {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string | number>(
-    "All Stars",
+    "All Stars"
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ratings, setRatings] = useState<Rating[]>(initialRatings);
   const [avgRating, setAvgRating] = useState<number>(averageRating);
   const [reviewCount, setReviewCount] = useState<number>(totalReviews);
   const [userRating, setUserRating] = useState<Rating | null>(
-    initialRatings.find((r) => r.userId === currentUserId) || null,
+    initialRatings.find((r) => r.userId === currentUserId) || null
   );
 
   useEffect(() => {
@@ -63,7 +63,7 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
         setAvgRating(data.averageRating);
         setReviewCount(data.totalReviews);
         setUserRating(
-          data.ratings.find((r: Rating) => r.userId === currentUserId) || null,
+          data.ratings.find((r: Rating) => r.userId === currentUserId) || null
         );
       } catch (error) {
         console.error("Error fetching ratings:", error);
@@ -133,12 +133,41 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
     });
   };
 
+  const handleDeleteRating = async () => {
+    if (!confirm("Are you sure you want to delete your rating?")) return;
+
+    try {
+      const response = await fetch("/api/ratings", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }), // assuming `productId` is in scope
+      });
+
+      if (!response.ok) throw new Error("Failed to delete rating");
+
+      // Optional: toast notification if you're using a toast library
+      // toast.success("Rating deleted successfully");
+
+      setUserRating(null); // Clear user's rating from state
+      setRatings((prev) => prev.filter((r) => r.userId !== currentUserId));
+      setReviewCount((prev) => Math.max(0, prev - 1));
+
+      // Optionally re-fetch updated ratings or refresh
+      // router.refresh(); // Uncomment if needed to revalidate data
+    } catch (error) {
+      console.error("Error deleting rating:", error);
+      // toast.error("Failed to delete rating");
+    }
+  };
+
   return (
     <div className="p-4 md:p-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">
           Reviews for {productName}
-        </h1>{" "}
+        </h1>
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex items-center space-x-2">
             <div className="flex">
@@ -193,11 +222,10 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
           filteredRatings.map((rating) => (
             <div
               key={rating.id}
-              className="p-5 border border-gray-100 bg-white rounded-2xl  shadow-sm hover:shadow-md transition-all"
+              className="p-5 border border-gray-100 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all relative"
             >
               <div className="flex items-start space-x-4">
                 <Avatar className="h-12 w-12">
-                  {" "}
                   <AvatarImage
                     src={rating.user.profilePicture}
                     alt={rating.user.displayName}
@@ -206,6 +234,7 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
                     {rating.user.displayName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+
                 <div className="flex-1">
                   <p className="font-semibold text-gray-800">
                     {rating.user.displayName}
@@ -225,19 +254,26 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
                       />
                     ))}
                   </div>
-
                   {rating.comment && (
                     <p className="text-gray-700 mt-3 text-sm">
                       {rating.comment}
                     </p>
                   )}
                 </div>
+
+                {rating.userId === currentUserId && (
+                  <button
+                    onClick={handleDeleteRating}
+                    className="mt-4 border border-red-500 text-red-500 hover:bg-red-50 hover:text-red-700 text-sm font-medium px-3 py-1 rounded-full transition-all"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             </div>
           ))
         ) : (
           <div className="p-10 text-center text-gray-500 rounded-lg">
-            {" "}
             No reviews found for this product with the selected filter.
           </div>
         )}

@@ -42,7 +42,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const hasRatings = reviewCount > 0;
 
   return (
-    <Card className="w-full max-w-52 h-[420px] border border-blue-200 hover:border-primary transition-transform duration-200 hover:scale-105">
+    <Card className="w-full max-w-52 h-[420px] border border-blue-950 hover:border-primary transition-transform duration-200 hover:scale-105">
       <CardHeader className="p-0">
         <div
           onClick={() => router.push(`/product/${id}`)}
@@ -91,14 +91,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 {hasRatings ? (
                   <>
                     {averageRating?.toFixed(1) || "0.0"}{" "}
-                    <span className="text-sm text-black">
+                    <span className="text-sm text-blue-950 font-medium">
                       ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
                     </span>
                   </>
                 ) : (
-                  <span className="text-sm text-muted-foreground">
-                    (No reviews)
-                  </span>
+                  <span className="text-sm text-gray-400">(No reviews)</span>
                 )}
               </p>
             </TooltipTrigger>
