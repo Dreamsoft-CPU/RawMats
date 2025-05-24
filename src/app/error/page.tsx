@@ -1,14 +1,16 @@
-"use client";
-
 import { ErrorCard } from "@/components/error/ErrorCard";
-import { useSearchParams } from "next/navigation";
 
-export default function ErrorPage() {
-  const searchParams = useSearchParams();
-  const errorMessage =
-    searchParams.get("message") || "An unexpected error occurred";
-
+export default async function ErrorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const message = (await searchParams).message;
   // Limit message length for security and UI consistency
+
+  const errorMessage =
+    typeof message === "string" ? message : "An unexpected error occurred";
+
   const formattedMessage =
     errorMessage.length > 100 ? "An unexpected error occurred" : errorMessage;
 

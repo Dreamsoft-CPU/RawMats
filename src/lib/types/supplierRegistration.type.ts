@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isPossiblePhoneNumber } from "libphonenumber-js";
 
 export const SupplierRegistrationFormSchema = z.object({
   businessName: z
@@ -7,7 +8,18 @@ export const SupplierRegistrationFormSchema = z.object({
   businessLocation: z.string(),
   businessPhone: z
     .string()
-    .min(4, "Business phone must be at least 4 characters"),
+    .min(4, "Business phone must be at least 4 characters")
+    .refine(
+      (phone) => {
+        try {
+          return isPossiblePhoneNumber(phone);
+        } catch (e) {
+          console.error(e);
+          return false;
+        }
+      },
+      { message: "Invalid phone number" },
+    ),
   businessDocuments: z
     .array(
       z.instanceof(File).refine(

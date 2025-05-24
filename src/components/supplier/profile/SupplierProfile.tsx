@@ -146,11 +146,14 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
           )}
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
-          <div>
+          <div className="flex flex-col">
             <strong className="text-gray-700">Location:</strong>
-            <p className="text-blue-500 text-xs mt-1 cursor-pointer hover:underline">
-              {data.businessLocation || "No location added"}
-            </p>
+            <a
+              href={`${data.businessLocation}`}
+              className="text-blue-500 text-xs mt-1 cursor-pointer hover:underline"
+            >
+              {data.locationName || "No location added"}
+            </a>
           </div>
         </div>
       </div>

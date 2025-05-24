@@ -15,7 +15,7 @@ const ClickableLogo: React.FC<ClickableLogoProps> = ({ url }) => {
       alt="RawMats"
       width={400}
       height={400}
-      className="hidden md:block"
+      className="hidden md:block hover:cursor-pointer hover:scale-105 transition-transform duration-200"
       onClick={() => router.push(url)}
     />
   );

@@ -37,10 +37,12 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
+    const formattedEmail = data.email.toLowerCase();
+
     await prisma.user.create({
       data: {
         id: userData.user.id,
-        email: data.email,
+        email: formattedEmail,
         displayName: data.displayName,
         phoneNumber: data.phoneNumber,
       },

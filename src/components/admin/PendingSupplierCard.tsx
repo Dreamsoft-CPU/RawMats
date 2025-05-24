@@ -146,7 +146,7 @@ export function SupplierVerificationComponent({
                   href={supplier.businessLocation}
                   target="_blank"
                 >
-                  {supplier.businessLocation}
+                  {supplier.locationName}
                 </a>
               </div>
             </div>

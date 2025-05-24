@@ -23,6 +23,7 @@ import {
 import FileUploadWithPreview from "./FileUploadWithPreview";
 import MapDialog from "./MapDialog";
 import { useRouter } from "next/navigation";
+import { PhoneInput } from "../ui/phone-input";
 
 export function SupplierRegistrationForm({
   className,
@@ -31,6 +32,7 @@ export function SupplierRegistrationForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [registrationSent, setRegistrationSent] = useState(false);
+  const [locationName, setLocationName] = useState<string>("");
   const router = useRouter();
 
   const form = useForm<SupplierRegistrationFormData>({
@@ -43,8 +45,9 @@ export function SupplierRegistrationForm({
     },
   });
 
-  const handleLocationSelect = (location: string) => {
+  const handleLocationSelect = (location: string, locName: string) => {
     form.setValue("businessLocation", location);
+    setLocationName(locName);
   };
 
   const showErrorMessage = (message: string) => {
@@ -61,6 +64,7 @@ export function SupplierRegistrationForm({
       formData.append("businessName", data.businessName);
       formData.append("businessLocation", data.businessLocation);
       formData.append("businessPhone", data.businessPhone);
+      formData.append("locationName", locationName);
 
       // Append each file in the businessDocuments array
       data.businessDocuments.forEach((file) => {
@@ -150,11 +154,11 @@ export function SupplierRegistrationForm({
                         name="businessPhone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Phone</FormLabel>
+                            <FormLabel>Business Phone Number</FormLabel>
                             <FormControl>
-                              <Input
+                              <PhoneInput
+                                placeholder="Enter a phone number..."
                                 {...field}
-                                placeholder="(XXX) XXX-XXXX or (63) XXX-XXX-XXXX"
                               />
                             </FormControl>
                             <FormMessage />
@@ -177,6 +181,11 @@ export function SupplierRegistrationForm({
                                 />
                               </div>
                             </FormControl>
+                            {locationName && (
+                              <div className="text-sm text-gray-600 mt-1 overflow-hidden text-ellipsis">
+                                {locationName}
+                              </div>
+                            )}
                             <FormMessage />
                           </FormItem>
                         )}
