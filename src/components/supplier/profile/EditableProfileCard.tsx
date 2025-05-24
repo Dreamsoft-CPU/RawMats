@@ -128,7 +128,7 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg space-y-4 text-sm w-full">
+    <div className="max-w-[60vw] mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg space-y-4 text-sm w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div className="relative group shrink-0">
           <div className="w-16 h-16 rounded-full overflow-hidden">
@@ -212,7 +212,9 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
             </Button>
           </div>
           {supplier?.bio ? (
-            <p className="text-gray-600 text-xs mt-1">{supplier.bio}</p>
+            <p className="text-gray-600 text-xs mt-1 text-balance truncate">
+              {supplier.bio}
+            </p>
           ) : (
             <p className="text-gray-400 italic text-xs mt-1">No bio added.</p>
           )}
@@ -271,18 +273,40 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
           <DialogHeader>
             <DialogTitle>Edit Bio</DialogTitle>
           </DialogHeader>
-          <Textarea
-            className="w-full p-2 border border-gray-300 rounded-md"
-            rows={4}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Write a short description about your business..."
-          />
+
+          <div className="relative">
+            <Textarea
+              className="w-full p-2 border border-gray-300 rounded-md bg-transparent relative z-10"
+              rows={4}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Write a short description about your business..."
+              style={{ resize: "none" }}
+            />
+          </div>
+
+          {/* Character Counter */}
+          <div
+            className={`text-sm mt-2 text-right ${
+              bio.length > 1500 ? "text-red-600 font-medium" : "text-gray-500"
+            }`}
+          >
+            {bio.length}/1500
+          </div>
+
           <DialogFooter className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={() => setIsBioModalOpen(false)}>
               <X size={14} className="mr-1" /> Cancel
             </Button>
-            <Button onClick={() => handleSave("bio", bio)}>Save Bio</Button>
+            <Button
+              onClick={() => handleSave("bio", bio)}
+              disabled={bio.length > 1500}
+              className={
+                bio.length > 1500 ? "opacity-50 cursor-not-allowed" : ""
+              }
+            >
+              Save Bio
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

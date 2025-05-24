@@ -29,7 +29,14 @@ export async function PUT(
     if (businessName) updateData.businessName = businessName;
     if (businessLocation) updateData.businessLocation = businessLocation;
     if (businessPhone) updateData.businessPhone = businessPhone;
-    if (bio) updateData.bio = bio;
+    if (bio) {
+      // in the frontend, \n is turned into \r\n, causing bio.length discrepancies
+      const normalizedBio = bio.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+      if (normalizedBio.length > 1500)
+        throw new Error("Bio cannot exceed 1500 characters");
+      updateData.bio = normalizedBio;
+    }
 
     // Process image if provided
     if (businessPicture && businessPicture.size > 0) {
