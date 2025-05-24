@@ -19,6 +19,27 @@ import { toast } from "sonner";
 import { UserDataProps } from "@/lib/interfaces/ProductListProps";
 import Link from "next/link";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { isValidPhoneNumber } from "react-phone-number-input";
+import { z } from "zod";
+
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { PhoneInput } from "@/components/ui/phone-input";
+
+export const phoneSchema = z.object({
+  phone: z
+    .string()
+    .refine(isValidPhoneNumber, { message: "Invalid phone number" }),
+});
+
 const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
   const supplier = userData.Supplier[0]; // Assuming we're showing the first supplier
   const [bio, setBio] = useState(supplier?.bio || "");
@@ -32,6 +53,13 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
 
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const form = useForm<z.infer<typeof phoneSchema>>({
+    resolver: zodResolver(phoneSchema),
+    defaultValues: {
+      phone: supplier.businessPhone,
+    },
+  });
 
   const handleFileUpload = () => {
     if (fileInputRef.current) {
@@ -125,6 +153,10 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
         `Failed to update ${type === "bio" ? "bio" : "phone number"}`,
       );
     }
+  };
+
+  const submitPhone = (data: z.infer<typeof phoneSchema>) => {
+    handleSave("businessPhone", data.phone);
   };
 
   return (
@@ -222,9 +254,14 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <strong className="text-gray-700">Location:</strong>
-            <p className="text-blue-500 text-xs mt-1 cursor-pointer hover:underline">
+            <a
+              href={supplier.businessLocation}
+              target="_blank"
+              className="text-blue-500 text-xs mt-1 cursor-pointer hover:underline"
+            >
+              <br />
               {supplier?.businessLocation || "No location added"}
-            </p>
+            </a>
           </div>
         </div>
       </div>
@@ -261,7 +298,7 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
               </Button>
             </div>
             <p className="text-gray-600 text-xs mt-1">
-              {supplier?.businessPhone || "No phone number added"}
+              {phone || "No phone number added"}
             </p>
           </div>
         </div>
@@ -287,15 +324,19 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
 
           {/* Character Counter */}
           <div
-            className={`text-sm mt-2 text-right ${
-              bio.length > 1500 ? "text-red-600 font-medium" : "text-gray-500"
-            }`}
+            className={`text-sm mt-2 text-right ${bio.length > 1500 ? "text-red-600 font-medium" : "text-gray-500"}`}
           >
             {bio.length}/1500
           </div>
 
           <DialogFooter className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsBioModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsBioModalOpen(false);
+                setBio(supplier.bio);
+              }}
+            >
               <X size={14} className="mr-1" /> Cancel
             </Button>
             <Button
@@ -317,23 +358,35 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
           <DialogHeader>
             <DialogTitle>Edit Phone Number</DialogTitle>
           </DialogHeader>
-          <Input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Enter your phone number"
-          />
-          <DialogFooter className="flex justify-end gap-2 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsPhoneModalOpen(false)}
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(submitPhone)}
+              className="flex flex-col items-start space-y-8"
             >
-              <X size={14} className="mr-1" /> Cancel
-            </Button>
-            <Button onClick={() => handleSave("businessPhone", phone)}>
-              Save Phone
-            </Button>
-          </DialogFooter>
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-start">
+                    <FormControl className="w-full">
+                      <PhoneInput
+                        defaultCountry="PH"
+                        international
+                        countryCallingCodeEditable={false}
+                        placeholder="Enter a phone number"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-left">
+                      Enter a phone number
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Submit</Button>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 

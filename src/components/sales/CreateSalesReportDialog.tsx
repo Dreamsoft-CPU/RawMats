@@ -233,7 +233,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
                               onValueChange={(e) => setSearchQuery(e)}
                             />
                             <CommandList>
-                              <CommandEmpty>No framework found.</CommandEmpty>
+                              <CommandEmpty>No products found.</CommandEmpty>
                               <CommandGroup>
                                 {products.map((product) => (
                                   <CommandItem
