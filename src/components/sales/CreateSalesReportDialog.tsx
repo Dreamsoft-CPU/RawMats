@@ -261,22 +261,31 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
                         type="number"
                         min="1"
                         value={item.quantity}
-                        onChange={(e) =>
-                          handleItemChange(index, "quantity", e.target.value)
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value.length <= 5) {
+                            handleItemChange(index, "quantity", value);
+                          }
+                        }}
                         required
                       />
                     </div>
                     <div className="space-y-1">
                       <Label>Unit Price</Label>
                       <div className="p-2 bg-gray-50 border rounded-md">
-                        ₱{item.productPrice.toFixed(2)}
+                        ₱
+                        {item.productPrice.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                     <div className="space-y-1">
                       <Label>Total</Label>
                       <div className="p-2 bg-gray-50 border rounded-md font-medium">
-                        ₱{item.totalPrice.toFixed(2)}
+                        ₱
+                        {item.totalPrice.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                   </div>
@@ -300,7 +309,10 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
                 Total Amount
               </Label>
               <div className="text-xl font-bold text-primary-500">
-                ₱{totalAmount.toFixed(2)}
+                ₱
+                {totalAmount.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
               </div>
             </div>
           </div>

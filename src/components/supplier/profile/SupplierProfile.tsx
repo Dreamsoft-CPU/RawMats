@@ -191,7 +191,9 @@ const SupplierProfileCard: React.FC<SupplierInfoProps> = ({ data }) => {
         <h2 className="text-base font-medium text-gray-800">
           Verified Products
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center xl:grid-cols-4 gap-4">
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 ${productCount > 0 ? "justify-items-center" : "justify-items-start"} xl:grid-cols-4 gap-4`}
+        >
           {productCount > 0 ? (
             data.Product.map((product) => {
               if (!product.verified) return null;
