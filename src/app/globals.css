@@ -6,6 +6,37 @@
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Mobile-first card grid utilities */
+  .grid-cards-mobile {
+    @apply grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6;
+  }
+  
+  .grid-suppliers-mobile {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5;
+  }
+  
+  /* Enhanced card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  /* Mobile-optimized text sizing */
+  .text-mobile-sm {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-mobile-base {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-mobile-lg {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-mobile-xl {
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
+  }
 }
 
 @layer base {
@@ -123,6 +154,41 @@
 .ant-carousel .slick-dots li.slick-active button {
   opacity: 1;
   background: black;
+}
+
+/* Enhanced mobile card styling */
+@media (max-width: 640px) {
+  .mobile-card {
+    min-height: 280px;
+  }
+  
+  .mobile-card-image {
+    height: 120px;
+  }
+  
+  .mobile-card-content {
+    padding: 8px 12px;
+  }
+}
+
+@media (min-width: 640px) {
+  .mobile-card {
+    min-height: 320px;
+  }
+  
+  .mobile-card-image {
+    height: 160px;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-card {
+    min-height: 380px;
+  }
+  
+  .mobile-card-image {
+    height: 200px;
+  }
 }
 
 @layer base {

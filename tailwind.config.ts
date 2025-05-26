@@ -124,10 +124,22 @@ const config: Config = {
       },
       screens: {
         xs: "475px",
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
+        "2xl": "1536px",
       },
       spacing: {
         "safe-top": "env(safe-area-inset-top)",
         "safe-bottom": "env(safe-area-inset-bottom)",
+        "mobile-padding": "1rem",
+        "mobile-gap": "0.75rem",
+      },
+      fontSize: {
+        "mobile-xs": ["0.65rem", { lineHeight: "0.75rem" }],
+        "mobile-sm": ["0.75rem", { lineHeight: "1rem" }],
+        "mobile-base": ["0.875rem", { lineHeight: "1.25rem" }],
       },
     },
   },
