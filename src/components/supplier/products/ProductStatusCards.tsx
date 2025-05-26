@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Hourglass, Package } from "lucide-react";
 import {
   Carousel,
@@ -19,118 +19,74 @@ const ProductStatusCards: React.FC<UserDataProps> = ({ userData }) => {
 
   const totalProducts = userData.Supplier[0].Product.length;
 
+  const cardData = [
+    {
+      title: "Total Products",
+      value: totalProducts,
+      icon: Package,
+      color: "blue",
+      bgColor: "bg-blue-50",
+      textColor: "text-blue-600",
+      iconColor: "text-blue-600",
+    },
+    {
+      title: "Pending Products",
+      value: pendingProducts,
+      icon: Hourglass,
+      color: "yellow",
+      bgColor: "bg-yellow-50",
+      textColor: "text-yellow-600",
+      iconColor: "text-yellow-500",
+    },
+    {
+      title: "Verified Products",
+      value: verifiedProducts,
+      icon: CheckCircle,
+      color: "green",
+      bgColor: "bg-green-50",
+      textColor: "text-green-600",
+      iconColor: "text-green-600",
+    },
+  ];
+
+  const StatCard = ({ data }: { data: (typeof cardData)[0] }) => (
+    <Card
+      className={`border-0 shadow-md ${data.bgColor} hover:shadow-lg transition-shadow`}
+    >
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <CardTitle className="text-sm font-medium text-gray-700">
+              {data.title}
+            </CardTitle>
+            <p className={`text-3xl font-bold ${data.textColor}`}>
+              {data.value}
+            </p>
+          </div>
+          <data.icon size={32} className={`${data.iconColor} opacity-80`} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="flex flex-col gap-4 w-full z-50">
-      {/* For desktop/larger screens */}
-      <div className="hidden md:flex md:space-x-4 w-full">
-        <Card className="relative border border-gray-200 shadow-lg bg-white p-6 flex-1">
-          <div className="flex items-start">
-            <Package size={32} className="h-7 w-7 text-blue-600 mr-3" />
-            <div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg text-gray-700">
-                  Total Products
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-blue-600">
-                  {totalProducts}
-                </p>
-              </CardContent>
-            </div>
-          </div>
-        </Card>
-        <Card className="relative border border-gray-200 shadow-lg bg-white p-6 flex-1">
-          <div className="flex items-start">
-            <Hourglass className="h-7 w-7 text-yellow-500 mr-3" />
-            <div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg text-gray-700">
-                  Pending Products
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-yellow-500">
-                  {pendingProducts}
-                </p>
-              </CardContent>
-            </div>
-          </div>
-        </Card>
-        <Card className="relative border border-gray-200 shadow-lg bg-white p-6 flex-1">
-          <div className="flex items-start">
-            <CheckCircle className="h-7 w-7 text-green-600 mr-3" />
-            <div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg text-gray-700">
-                  Verified Products
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-green-600">
-                  {verifiedProducts}
-                </p>
-              </CardContent>
-            </div>
-          </div>
-        </Card>
+    <div className="w-full">
+      {/* Desktop Layout */}
+      <div className="hidden md:grid md:grid-cols-3 gap-6">
+        {cardData.map((data, index) => (
+          <StatCard key={index} data={data} />
+        ))}
       </div>
 
-      {/* For mobile screens */}
-      <div className="flex flex-col items-center justify-center md:hidden">
+      {/* Mobile Layout */}
+      <div className="md:hidden">
         <Carousel className="w-full">
-          <CarouselContent>
-            <CarouselItem>
-              <Card className="border border-gray-200 shadow-lg bg-white p-6">
-                <div className="flex items-start">
-                  <Package size={32} className="h-7 w-7 text-blue-600 mr-3" />
-                  <div>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg text-gray-700">
-                        Total Products
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-blue-600">5</p>
-                    </CardContent>
-                  </div>
-                </div>
-              </Card>
-            </CarouselItem>
-            <CarouselItem>
-              <Card className="border border-gray-200 shadow-lg bg-white p-6">
-                <div className="flex items-start">
-                  <Hourglass className="h-7 w-7 text-yellow-500 mr-3" />
-                  <div>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg text-gray-700">
-                        Pending Products
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-yellow-500">5</p>
-                    </CardContent>
-                  </div>
-                </div>
-              </Card>
-            </CarouselItem>
-            <CarouselItem>
-              <Card className="border border-gray-200 shadow-lg bg-white p-6">
-                <div className="flex items-start">
-                  <CheckCircle className="h-7 w-7 text-green-600 mr-3" />
-                  <div>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg text-gray-700">
-                        Verified Products
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-green-600">5</p>
-                    </CardContent>
-                  </div>
-                </div>
-              </Card>
-            </CarouselItem>
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {cardData.map((data, index) => (
+              <CarouselItem key={index} className="pl-2 md:pl-4 basis-4/5">
+                <StatCard data={data} />
+              </CarouselItem>
+            ))}
           </CarouselContent>
         </Carousel>
       </div>

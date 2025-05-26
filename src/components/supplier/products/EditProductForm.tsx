@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,6 +40,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Edit3, Trash2 } from "lucide-react";
 
 interface EditProductFormProps {
   productId: string;
@@ -54,6 +57,8 @@ const EditProductForm = ({
   const [showImageCropper, setShowImageCropper] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   const form = useForm<EditProductFormData>({
     resolver: zodResolver(EditProductFormDataSchema),
@@ -68,21 +73,46 @@ const EditProductForm = ({
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
       setShowImageCropper(true);
     }
   };
 
-  const handleCropComplete = (croppedBlob: Blob) => {
-    // Convert blob to File to use with the form
-    const croppedFile = new File([croppedBlob], "cropped_image.jpg", {
-      type: "image/jpeg",
-    });
+  const handleCropComplete = useCallback(
+    (croppedBlob: Blob) => {
+      try {
+        const croppedFile = new File([croppedBlob], "cropped_image.jpg", {
+          type: "image/jpeg",
+        });
 
-    form.setValue("image", croppedFile, { shouldValidate: true });
+        form.setValue("image", croppedFile, { shouldValidate: true });
+        setShowImageCropper(false);
+
+        // Clean up the original image URL
+        if (selectedImage) {
+          URL.revokeObjectURL(selectedImage);
+          setSelectedImage(null);
+        }
+      } catch (error) {
+        console.error("Error handling crop complete:", error);
+        toast.error("Error processing cropped image");
+      }
+    },
+    [form, selectedImage],
+  );
+
+  const handleCropCancel = useCallback(() => {
     setShowImageCropper(false);
-  };
+    if (selectedImage) {
+      URL.revokeObjectURL(selectedImage);
+      setSelectedImage(null);
+    }
+  }, [selectedImage]);
 
   const onSubmit = async (data: EditProductFormData) => {
     try {
@@ -90,9 +120,9 @@ const EditProductForm = ({
 
       const formData = new FormData();
       formData.append("id", productId);
-      formData.append("name", data.name || "");
+      formData.append("name", data.name?.trim() || "");
       formData.append("price", data.price ? data.price.toString() : "0");
-      formData.append("description", data.description || "");
+      formData.append("description", data.description?.trim() || "");
       formData.append("supplierId", data.supplierId || "");
 
       if (data.image) {
@@ -109,14 +139,13 @@ const EditProductForm = ({
         throw new Error(errorData.message || "Failed to update product");
       }
 
-      const result = await response.json();
-      console.log("Product updated:", result.product);
-
+      toast.success("Product updated successfully!");
       setOpen(false);
-      toast.success("Product updated successfully");
+      router.refresh();
     } catch (error) {
-      const message = error instanceof Error && error.message;
-      toast.error(`An error occurred while updating the product: ${message}`);
+      const message =
+        error instanceof Error ? error.message : "An error occurred";
+      toast.error(`Failed to update product: ${message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +153,7 @@ const EditProductForm = ({
 
   const handleDelete = async () => {
     try {
-      setIsSubmitting(true);
+      setIsDeleting(true);
 
       const response = await fetch(`/api/product/`, {
         method: "DELETE",
@@ -136,89 +165,137 @@ const EditProductForm = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update product");
+        throw new Error(errorData.message || "Failed to delete product");
       }
 
+      toast.success("Product deleted successfully!");
       setOpen(false);
-      toast.success("Product deleted successfully");
+      router.refresh();
     } catch (error) {
-      const message = error instanceof Error && error.message;
-      toast.error(`An error occurred while updating the product: ${message}`);
+      const message =
+        error instanceof Error ? error.message : "An error occurred";
+      toast.error(`Failed to delete product: ${message}`);
     } finally {
-      setIsSubmitting(false);
+      setIsDeleting(false);
     }
   };
 
+  // Prevent dialog from closing when ImageCropper is open
+  const handleDialogOpenChange = (newOpen: boolean) => {
+    // Don't allow closing the dialog when image cropper is active
+    if (!newOpen && showImageCropper) {
+      return;
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Edit Product
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Edit Product</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            <Edit3 size={14} className="mr-1" />
+            Edit
+          </Button>
+        </DialogTrigger>
+        <DialogContent
+          className="max-w-2xl max-h-[90vh] overflow-y-auto"
+          onPointerDownOutside={(e) => {
+            // Prevent closing when ImageCropper is open
+            if (showImageCropper) {
+              e.preventDefault();
+            }
+          }}
+          onEscapeKeyDown={(e) => {
+            // Prevent closing when ImageCropper is open
+            if (showImageCropper) {
+              e.preventDefault();
+            }
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-900">
+              Edit Product
+            </DialogTitle>
+          </DialogHeader>
 
-        {showImageCropper && selectedImage ? (
-          <ImageCropper
-            image={selectedImage}
-            onCropComplete={handleCropComplete}
-            onCancel={() => setShowImageCropper(false)}
-            aspectRatio={4 / 3}
-          />
-        ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter product name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Product Name
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter product name"
+                          className="border-gray-300 focus:border-primary-500 focus:ring-primary-500"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value))
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Price (₱)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          step="0.01"
+                          min="0.01"
+                          max="1000000"
+                          className="border-gray-300 focus:border-primary-500 focus:ring-primary-500"
+                          {...field}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value ? parseFloat(value) : undefined,
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Description
+                    </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Describe the product"
-                        className="min-h-[100px]"
+                        placeholder="Describe your product in detail..."
+                        className="min-h-[120px] border-gray-300 focus:border-primary-500 focus:ring-primary-500 resize-none"
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription className="text-xs text-gray-600">
+                      Please input package description, net weight, etc. for
+                      better verification.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -229,44 +306,37 @@ const EditProductForm = ({
                 name="image"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Image (Optional)</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Product Image (Optional)
+                    </FormLabel>
                     <FormControl>
-                      <div className="flex flex-col gap-2">
+                      <div className="space-y-4">
                         <Input
                           type="file"
                           accept="image/jpeg,image/png,image/webp"
-                          onChange={(e) => {
-                            handleImageSelect(e);
-                          }}
+                          onChange={handleImageSelect}
+                          className="border-gray-300 focus:border-primary-500 focus:ring-primary-500"
                         />
                         {field.value ? (
-                          <div className="mt-2">
-                            <div className="text-sm text-green-600 mb-1">
-                              New image selected
+                          <div className="border rounded-lg p-3 bg-gray-50">
+                            <div className="text-sm text-green-600 font-medium mb-2">
+                              ✓ New image selected and cropped
                             </div>
-                            <div className="relative h-40 w-full border rounded-md overflow-hidden">
+                            <div className="relative h-48 w-full border rounded-md overflow-hidden bg-white">
                               <Image
                                 src={URL.createObjectURL(field.value as File)}
                                 alt="Product preview"
                                 fill
                                 className="object-contain"
-                                onLoad={(
-                                  e: React.SyntheticEvent<HTMLImageElement>,
-                                ) => {
-                                  // Clean up the object URL after the image loads
-                                  URL.revokeObjectURL(
-                                    (e.target as HTMLImageElement).src,
-                                  );
-                                }}
                               />
                             </div>
                           </div>
                         ) : initialData.imageUrl ? (
-                          <div className="mt-2">
-                            <div className="text-sm text-muted-foreground mb-1">
+                          <div className="border rounded-lg p-3 bg-gray-50">
+                            <div className="text-sm text-gray-600 font-medium mb-2">
                               Current image
                             </div>
-                            <div className="relative h-40 w-full border rounded-md overflow-hidden">
+                            <div className="relative h-48 w-full border rounded-md overflow-hidden bg-white">
                               <Image
                                 src={initialData.imageUrl}
                                 alt="Current product image"
@@ -283,26 +353,22 @@ const EditProductForm = ({
                 )}
               />
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                >
-                  Cancel
-                </Button>
-
+              <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6 border-t">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      {isSubmitting ? "Deleting..." : "Delete Product"}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={isSubmitting || isDeleting}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      <Trash2 size={14} className="mr-1" />
+                      {isDeleting ? "Deleting..." : "Delete"}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Are you absolutely sure?
-                      </AlertDialogTitle>
+                      <AlertDialogTitle>Delete Product</AlertDialogTitle>
                       <AlertDialogDescription>
                         This action cannot be undone. This will permanently
                         delete this product.
@@ -312,22 +378,48 @@ const EditProductForm = ({
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDelete}
-                        disabled={isSubmitting}
+                        disabled={isDeleting}
+                        className="bg-red-600 hover:bg-red-700"
                       >
-                        Continue
+                        Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Updating..." : "Update Product"}
-                </Button>
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setOpen(false)}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || isDeleting}
+                    className="bg-primary-500 hover:bg-primary-600 text-white min-w-[120px]"
+                  >
+                    {isSubmitting ? "Updating..." : "Update Product"}
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>
-        )}
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* ImageCropper with better isolation */}
+      {showImageCropper && selectedImage && (
+        <ImageCropper
+          image={selectedImage}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          aspectRatio={4 / 3}
+        />
+      )}
+    </>
   );
 };
 

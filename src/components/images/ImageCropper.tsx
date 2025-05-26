@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Cropper from "react-easy-crop";
 import { Button } from "@/components/ui/button";
 import { Point, Area } from "react-easy-crop";
@@ -35,6 +36,17 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Prevent body scroll when cropper is open
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
 
   const onCropChange = (crop: Point) => {
     setCrop(crop);
@@ -64,151 +76,189 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : "An error occurred";
-      toast.error(`An error occured in cropping the image: ${message}`);
+      toast.error(`An error occurred in cropping the image: ${message}`);
     } finally {
       setIsLoading(false);
     }
   }, [croppedAreaPixels, image, onCropComplete, rotation]);
 
-  return (
-    <div className="flex flex-col w-screen sm:w-[600px] h-screen sm:h-[95vh] bg-white rounded-lg shadow-lg p-4">
-      <div className="mb-2">
-        <div className="flex items-center gap-4">
-          <h3 className="text-lg font-medium text-gray-900">Crop Your Image</h3>
-          <Popover>
-            <PopoverTrigger>
-              <CircleHelp size={22} color="#ff0000" strokeWidth={2} />
-            </PopoverTrigger>
-            <PopoverContent className="overflow-visible max-w-full">
-              <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
-                <li>
-                  Desktop: Use your mouse to drag the image and resize the crop
-                  area.
-                </li>
-                <li>
-                  Mobile: Use your finger to move the image within the crop
-                  area.
-                </li>
-                <li>
-                  Pinch to zoom in/out on both desktop (with trackpad) and
-                  mobile.
-                </li>
-                <li>Use the slider below to adjust zoom and rotation.</li>
-              </ul>
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
+  const handleCancel = () => {
+    document.body.style.overflow = "unset";
+    onCancel();
+  };
 
-      <div className="relative grow w-full bg-gray-100 rounded-md overflow-hidden">
-        <Cropper
-          image={image}
-          crop={crop}
-          zoom={zoom}
-          aspect={aspectRatio}
-          onCropChange={onCropChange}
-          onCropComplete={onCropCompleteHandler}
-          onZoomChange={onZoomChange}
-          rotation={rotation}
-          cropShape={cropShape}
-          showGrid={true}
-          minZoom={minZoom}
-          maxZoom={maxZoom}
-        />
-      </div>
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only close if clicking the backdrop itself, not its children
+    if (e.target === e.currentTarget) {
+      handleCancel();
+    }
+  };
 
-      <div className="mt-4 flex flex-col sm:flex-row justify-evenly gap-2 sm:gap-6 m-auto">
-        <div className="space-y-1 min-w-64 shrink-0">
-          <label className="text-sm font-medium text-gray-700">Zoom</label>
-          <div className="flex items-center gap-2">
-            <span className="text-xs">1x</span>
-            <Slider
-              value={[zoom]}
-              min={minZoom}
-              max={maxZoom}
-              step={0.1}
-              onValueChange={(value) => setZoom(value[0])}
-              className="flex-grow"
-            />
-            <span className="text-xs">{maxZoom}x</span>
-          </div>
-        </div>
+  const handleResetClick = () => {
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setRotation(0);
+    setCroppedAreaPixels(null);
+  };
 
-        <div className="space-y-1 min-w-64 shrink-0">
-          <label className="text-sm font-medium text-gray-700">Rotation</label>
-          <div className="flex items-center gap-2">
-            <span className="text-xs">-180°</span>
-            <Slider
-              value={[rotation]}
-              min={-180}
-              max={180}
-              step={1}
-              onValueChange={(value) => setRotation(value[0])}
-              className="flex-grow"
-            />
-            <span className="text-xs">180°</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6 flex justify-between items-center">
-        <Button
-          onClick={() => {
-            setCrop({ x: 0, y: 0 });
-            setZoom(1);
-            setRotation(0);
-            setCroppedAreaPixels(null);
-          }}
-          variant="link"
-          type="button"
-          className="text-red-600"
-          disabled={
-            crop.x === 0 && crop.y === 0 && zoom === 1 && rotation === 0
-          }
-        >
-          Reset
-        </Button>
-
-        <div className="flex gap-2">
-          <Button onClick={onCancel} variant="outline" type="button">
-            Cancel
-          </Button>
-
-          <Button
-            onClick={createCroppedImage}
-            disabled={isLoading}
-            className="relative"
-          >
-            {isLoading ? "Processing..." : "Confirm Crop"}
-            {isLoading && (
-              <span className="absolute inset-0 flex items-center justify-center">
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
+  const cropperContent = (
+    <div
+      className="fixed inset-0 bg-black/80 flex items-center justify-center p-2 sm:p-4"
+      style={{ zIndex: 9999 }}
+      onClick={handleBackdropClick}
+    >
+      <div
+        className="flex flex-col w-full max-w-4xl h-[calc(100vh-2rem)] sm:h-[90vh] bg-white rounded-lg shadow-xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()} // Prevent backdrop click when clicking inside
+      >
+        {/* Header */}
+        <div className="flex-shrink-0 p-3 sm:p-4 border-b bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                Crop Your Image
+              </h3>
+              <Popover>
+                <PopoverTrigger className="flex-shrink-0">
+                  <CircleHelp
+                    size={18}
+                    className="text-primary-500 hover:text-primary-700"
+                  />
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-80 text-xs sm:text-sm"
+                  style={{ zIndex: 10000 }}
                 >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-              </span>
-            )}
-          </Button>
+                  <ul className="text-gray-600 list-disc list-inside space-y-1">
+                    <li>Desktop: Drag to move, scroll to zoom</li>
+                    <li>Mobile: Touch to move, pinch to zoom</li>
+                    <li>Use sliders below for precise control</li>
+                  </ul>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </Button>
+          </div>
+        </div>
+
+        {/* Cropper Area */}
+        <div className="relative flex-1 bg-gray-900 min-h-0">
+          <Cropper
+            image={image}
+            crop={crop}
+            zoom={zoom}
+            aspect={aspectRatio}
+            onCropChange={onCropChange}
+            onCropComplete={onCropCompleteHandler}
+            onZoomChange={onZoomChange}
+            rotation={rotation}
+            cropShape={cropShape}
+            showGrid={true}
+            minZoom={minZoom}
+            maxZoom={maxZoom}
+            style={{
+              containerStyle: {
+                width: "100%",
+                height: "100%",
+                position: "relative",
+              },
+            }}
+          />
+        </div>
+
+        {/* Controls */}
+        <div className="flex-shrink-0 p-3 sm:p-4 border-t bg-gray-50 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Zoom</label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 w-6">1x</span>
+                <Slider
+                  value={[zoom]}
+                  min={minZoom}
+                  max={maxZoom}
+                  step={0.1}
+                  onValueChange={(value) => setZoom(value[0])}
+                  className="flex-1"
+                />
+                <span className="text-xs text-gray-500 w-8">{maxZoom}x</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Rotation
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 w-10">-180°</span>
+                <Slider
+                  value={[rotation]}
+                  min={-180}
+                  max={180}
+                  step={1}
+                  onValueChange={(value) => setRotation(value[0])}
+                  className="flex-1"
+                />
+                <span className="text-xs text-gray-500 w-10">180°</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
+            <Button
+              type="button"
+              onClick={handleResetClick}
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              disabled={
+                crop.x === 0 && crop.y === 0 && zoom === 1 && rotation === 0
+              }
+            >
+              Reset
+            </Button>
+
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={handleCancel}
+                variant="outline"
+                size="sm"
+                disabled={isLoading}
+                className="min-w-[80px]"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={createCroppedImage}
+                disabled={isLoading}
+                size="sm"
+                className="min-w-[100px] bg-primary-500 hover:bg-primary-600"
+              >
+                {isLoading ? "Processing..." : "Confirm"}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
+
+  // Don't render anything on server-side
+  if (!mounted) return null;
+
+  // Render as portal to document.body
+  return createPortal(cropperContent, document.body);
 };
 
 export default ImageCropper;
