@@ -77,16 +77,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
           ₱{price.toFixed(2)}
         </p>{" "}
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex items-center justify-start">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <p
-                className="flex flex-row items-center gap-1 cursor-pointer"
+                className="flex flex-row items-center gap-2 cursor-pointer w-full"
                 onClick={() => router.push(`/ratings?productId=${id}`)}
               >
                 <StarFilledIcon
-                  className={hasRatings ? "text-yellow-400" : "text-gray-300"}
+                  className={`w-5 h-5 ${hasRatings ? "text-yellow-400" : "text-gray-300"}`}
                 />
                 {hasRatings ? (
                   <>

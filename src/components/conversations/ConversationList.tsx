@@ -18,38 +18,43 @@ const ConversationList: React.FC<ConversationListProps> = ({
   const sortedConversations = sortConversationsByRecent(conversations);
 
   return (
-    <div className="w-full border-r border-border">
-      <div className="p-3 bg-secondary/30">
-        <h3 className="font-medium text-lg">Conversations</h3>
+    <div className="w-full h-full border-r border-border bg-gray-50">
+      <div className="p-4 bg-white border-b border-border">
+        <h3 className="font-bold text-xl">Conversations</h3>
       </div>
-      <ScrollArea className="h-[calc(600px-48px)]">
+      <ScrollArea className="h-[calc(100%-61px)]">
         {sortedConversations.map((conversation) => (
           <div
             key={conversation.id}
-            className={`p-3 cursor-pointer hover:bg-muted transition-colors duration-200 ${
-              activeConversationId === conversation.id ? "bg-muted" : ""
+            className={`flex items-center space-x-3 p-4 cursor-pointer border-b border-border last:border-b-0 hover:bg-gray-100 transition-colors duration-200 ${
+              activeConversationId === conversation.id
+                ? "bg-blue-100 hover:bg-blue-200"
+                : ""
             }`}
             onClick={() => onSelectConversation(conversation)}
           >
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {getConversationName(conversation, userId).charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 overflow-hidden">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-medium truncate">
-                    {getConversationName(conversation, userId)}
-                  </h4>
-                </div>
-                <p className="text-sm text-muted-foreground truncate">
-                  {getLastMessage(conversation)}
-                </p>
+            <Avatar className="h-12 w-12">
+              <AvatarFallback className="bg-blue-500 text-white font-semibold text-lg">
+                {getConversationName(conversation, userId).charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 overflow-hidden">
+              <div className="flex justify-between items-center mb-1">
+                <h4 className="font-semibold truncate text-gray-800">
+                  {getConversationName(conversation, userId)}
+                </h4>
               </div>
+              <p className="text-sm text-gray-600 truncate">
+                {getLastMessage(conversation)}
+              </p>
             </div>
           </div>
         ))}
+        {sortedConversations.length === 0 && (
+          <div className="p-4 text-center text-muted-foreground">
+            No conversations found.
+          </div>
+        )}
       </ScrollArea>
     </div>
   );

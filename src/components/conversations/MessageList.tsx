@@ -30,22 +30,26 @@ const MessageList: React.FC<MessageListProps> = ({ conversation, userId }) => {
         {sortedMessages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${isCurrentUserMessage(message.senderId, userId) ? "justify-end" : "justify-start"}`}
+            className={`flex ${
+              isCurrentUserMessage(message.senderId, userId)
+                ? "justify-end"
+                : "justify-start"
+            }`}
           >
             <div
-              className={`max-w-[70%] rounded-lg p-3 ${
+              className={`max-w-[70%] rounded-xl p-3 text-sm ${
                 isCurrentUserMessage(message.senderId, userId)
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-800"
               }`}
             >
               {!isCurrentUserMessage(message.senderId, userId) && (
-                <p className="text-xs font-medium mb-1">
+                <p className="text-xs font-medium mb-1 text-gray-600">
                   {message.sender.name}
                 </p>
               )}
               <p>{message.content}</p>
-              <p className="text-xs opacity-70 text-right mt-1">
+              <p className="text-xs opacity-90 text-right mt-1 text-gray-100 dark:text-gray-700">
                 {formatTime(message.createdAt)}
               </p>
             </div>

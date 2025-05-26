@@ -27,6 +27,9 @@ import Image from "next/image";
 import { ProductWithSupplier } from "@/lib/types/userToFavorite.type";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import "yet-another-react-lightbox/styles.css";
 
 interface ItemVerificationProps {
   products: ProductWithSupplier[];
@@ -40,9 +43,22 @@ export function ItemVerificationComponent({ products }: ItemVerificationProps) {
   }>({ productId: "", userID: "" });
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const [open, setOpen] = useState(false);
+  const [index, setIndex] = useState(0);
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const itemsPerPage = 9;
 
   const router = useRouter();
+
+  const toggleOpen = (state: boolean, images?: string[]) => () => {
+    if (state && images) {
+      setCurrentImages(images);
+    }
+    setOpen(state);
+  };
+
+  const updateIndex = ({ index: current }: { index: number }) =>
+    setIndex(current);
 
   const verifyProduct = async (id: string, userID: string) => {
     try {
@@ -131,18 +147,19 @@ export function ItemVerificationComponent({ products }: ItemVerificationProps) {
         </Button>
       </div>
 
-      <ScrollArea className="h-auto">
+      <ScrollArea className="h-fit">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
           {paginatedProducts.length === 0 && (
-            <p>No supplier applications currently</p>
+            <p className="text-center text-muted-foreground col-span-full">
+              No pending products for verification.
+            </p>
           )}
           {paginatedProducts.map((product) => (
             <Card
-              className="flex flex-col h-full transition-transform duration-200 hover:scale-105"
+              className="w-full max-w-sm mx-auto shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col h-full"
               key={product.id}
-              onClick={() => router.push(`/product/${product.id}`)}
             >
-              <div className="relative w-full pt-[56.25%]">
+              <div className="relative w-full pt-[56.25%] flex-shrink-0">
                 <Image
                   src={product.image}
                   alt={product.name}
@@ -150,39 +167,41 @@ export function ItemVerificationComponent({ products }: ItemVerificationProps) {
                   className="rounded-t-lg object-cover"
                 />
               </div>
-              <CardHeader>
-                <CardTitle className="text-lg">{product.name}</CardTitle>
-                <CardDescription className="line-clamp-2">
+              <CardHeader className="p-4 pb-2 flex-shrink-0">
+                <CardTitle className="text-lg font-semibold truncate">
+                  {product.name}
+                </CardTitle>
+                <CardDescription className="line-clamp-2 text-sm text-muted-foreground">
                   {product.description}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="font-semibold">
-                  Price: ${product.price.toFixed(2)}
+              <CardContent className="p-4 pt-2 space-y-2 flex-grow">
+                <p className="font-bold text-primary text-lg">
+                  ₱{product.price.toFixed(2)}
                 </p>
-                <p className="text-xs text-muted-foreground overflow-hidden text-ellipsis">
-                  Supplier ID: {product.supplierId}
-                </p>
-                <p className="text-xs text-muted-foreground overflow-hidden text-ellipsis">
-                  Supplier Name:{" "}
-                  <Link
-                    href={`/supplier/${product.supplier.businessName}`}
-                    className="underline"
-                  >
-                    {product.supplier.businessName}
-                  </Link>
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Date Added: {new Date(product.dateAdded).toLocaleDateString()}
-                </p>
-                {product.verified && (
-                  <p className="text-xs text-muted-foreground">
-                    Verified Date:{" "}
-                    {new Date(product.verifiedDate).toLocaleDateString()}
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>
+                    Supplier:{" "}
+                    <Link
+                      href={`/supplier/${product.supplier.businessName}`}
+                      className="underline hover:text-primary"
+                    >
+                      {product.supplier.businessName}
+                    </Link>
                   </p>
-                )}
+                  <p>
+                    Date Added:{" "}
+                    {new Date(product.dateAdded).toLocaleDateString()}
+                  </p>
+                  {product.verified && (
+                    <p>
+                      Verified:{" "}
+                      {new Date(product.verifiedDate).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
               </CardContent>
-              <CardFooter className="flex flex-col gap-2 justify-between mt-auto">
+              <CardFooter className="p-4 pt-0 flex gap-2 flex-shrink-0">
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
@@ -190,7 +209,7 @@ export function ItemVerificationComponent({ products }: ItemVerificationProps) {
                     verifyProduct(product.id, product.supplier.userId);
                   }}
                   disabled={product.verified}
-                  className="flex-1 hover:bg-rawmats-primary-100 w-full"
+                  className="flex-1 hover:bg-green-600 hover:text-white transition-colors text-sm"
                 >
                   <Check className="mr-2 h-4 w-4" />
                   Verify
@@ -203,7 +222,7 @@ export function ItemVerificationComponent({ products }: ItemVerificationProps) {
                   }}
                   variant="destructive"
                   disabled={product.verified}
-                  className="flex-1 w-full"
+                  className="flex-1 hover:bg-red-700 transition-colors text-sm"
                 >
                   <X className="mr-2 h-4 w-4" />
                   Reject
@@ -247,6 +266,24 @@ export function ItemVerificationComponent({ products }: ItemVerificationProps) {
           </PaginationContent>
         </Pagination>
       )}
+
+      <Lightbox
+        open={open}
+        close={toggleOpen(false)}
+        index={index}
+        plugins={[Zoom]}
+        slides={currentImages.map((img) => ({
+          src: img,
+        }))}
+        on={{ view: updateIndex }}
+        animation={{ fade: 0 }}
+        zoom={{
+          scrollToZoom: true,
+          maxZoomPixelRatio: 10,
+          wheelZoomDistanceFactor: 200,
+          pinchZoomDistanceFactor: 200,
+        }}
+      />
 
       <RejectionDialog
         isModalOpen={isModalOpen}

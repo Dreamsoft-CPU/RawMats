@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, MapPin, UserRound, X } from "lucide-react";
+import { Check, MapPin, UserRound, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,17 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Supplier, User } from "@prisma/client";
 import { useState } from "react";
 
 import Lightbox from "yet-another-react-lightbox";
-import Inline from "yet-another-react-lightbox/plugins/inline";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
 import RejectionDialog from "./RejectionDialog";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function SupplierVerificationComponent({
   suppliers,
@@ -120,140 +119,145 @@ export function SupplierVerificationComponent({
   };
 
   return (
-    <div className="p-4 w-full h-screen">
+    <div className="p-4 w-full">
       <div className="flex flex-row justify-center md:justify-start items-center md:w-auto relative md:mb-5">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
           Supplier Verification
         </h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2"></div>
-      {suppliers.length === 0 && <p>No supplier applications currently</p>}
-      {suppliers.map((supplier) => (
-        <Card className="my-3 max-w-3xl" key={supplier.id}>
-          <CardHeader>
-            <CardTitle className="text-xl md:text-3xl">
-              {supplier.businessName}
-            </CardTitle>
-            <div className="flex flex-col gap-2 text-muted-foreground">
-              <div className="flex flex-row gap-2 items-center text-sm md:text-base">
-                <UserRound className="size-4 sm:size-5 md:size-6" />
-                {supplier.user.displayName}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {suppliers.length === 0 && <p>No supplier applications currently</p>}
+        {suppliers.map((supplier) => (
+          <Card className="w-full max-w-sm mx-auto" key={supplier.id}>
+            <CardHeader className="p-4">
+              <CardTitle className="text-lg">{supplier.businessName}</CardTitle>
+              <div className="flex flex-col gap-1 text-muted-foreground">
+                <div className="flex flex-row gap-2 items-center text-sm">
+                  <UserRound className="size-4" />
+                  {supplier.user.displayName}
+                </div>
+                <div className="flex flex-row gap-2 items-center text-sm">
+                  <MapPin className="size-4 shrink-0" />
+                  <a
+                    className="underline shrink text-xs"
+                    href={supplier.businessLocation}
+                    target="_blank"
+                  >
+                    {supplier.locationName}
+                  </a>
+                </div>
               </div>
-              <div className="flex flex-row gap-2 items-center text-[10px] md:text-base">
-                <MapPin className="size-4 sm:size-5 md:size-6 shrink-0" />
-                <a
-                  className="underline shrink"
-                  href={supplier.businessLocation}
-                  target="_blank"
-                >
-                  {supplier.locationName}
-                </a>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <p className="text-sm font-medium mb-2">Business Documents:</p>
+              <div className="grid grid-cols-3 gap-1">
+                {supplier.businessDocuments &&
+                supplier.businessDocuments.length > 0 ? (
+                  supplier.businessDocuments.slice(0, 3).map((doc, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-square cursor-pointer group col-span-1"
+                      onClick={toggleOpen(true, supplier.businessDocuments)}
+                    >
+                      <Image
+                        src={doc}
+                        alt={
+                          idx === 2 && supplier.businessDocuments.length > 3
+                            ? `+${supplier.businessDocuments.length - 3} more documents`
+                            : `Document ${idx + 1}`
+                        }
+                        fill
+                        className={`object-cover rounded-md ${idx === 2 && supplier.businessDocuments.length > 3 ? "brightness-50" : ""}`}
+                      />
+                      {idx === 2 && supplier.businessDocuments.length > 3 && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-white text-lg font-semibold">
+                            +{supplier.businessDocuments.length - 3}
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                        <ImageIcon className="text-white size-6" />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm col-span-3 text-center">
+                    No documents available
+                  </p>
+                )}
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-base md:text-lg">Business Documents:</p>
-            <div className="w-full max-h-[400px] flex">
-              {supplier.businessDocuments &&
-              supplier.businessDocuments.length > 0 ? (
-                <>
-                  <Lightbox
-                    index={index}
-                    slides={supplier.businessDocuments.map((doc) => ({
-                      src: doc,
-                    }))}
-                    plugins={[Inline]}
-                    on={{
-                      view: updateIndex,
-                      click: toggleOpen(true, supplier.businessDocuments),
-                    }}
-                    carousel={{
-                      padding: 0,
-                      spacing: 10,
-                      imageFit: "contain",
-                      finite: true,
-                    }}
-                    inline={{
-                      style: {
-                        width: "100%",
-                        maxWidth: "700px",
-                        aspectRatio: "3 / 2",
-                        maxHeight: "400px",
-                        objectFit: "contain",
-                      },
-                    }}
-                  />
+            </CardContent>
+            <CardFooter className="p-4 pt-0 flex justify-between gap-2 w-full">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  verifySupplier(supplier.userId, supplier.id);
+                }}
+                disabled={supplier.verified || isLoading.status}
+                className="flex-1 hover:bg-green-600 hover:text-white transition-colors"
+              >
+                {isLoading.method === "verify" ? (
+                  <div className="flex items-center justify-center">
+                    <div className="mr-2 h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
+                    <span>Verifying</span>
+                  </div>
+                ) : (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Verify
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openRejectModal(supplier.id, supplier.userId);
+                }}
+                variant="destructive"
+                disabled={supplier.verified || isLoading.status}
+                className="flex-1 hover:bg-red-700 transition-colors"
+              >
+                {isLoading.method === "reject" ? (
+                  <div className="flex items-center justify-center">
+                    <div className="mr-2 h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
+                    <span>Rejecting</span>
+                  </div>
+                ) : (
+                  <>
+                    <X className="mr-2 h-4 w-4" />
+                    Reject
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
 
-                  <Lightbox
-                    open={open}
-                    close={toggleOpen(false)}
-                    index={index}
-                    plugins={[Zoom]}
-                    slides={currentDocuments.map((doc) => ({
-                      src: doc,
-                    }))}
-                    on={{ view: updateIndex }}
-                    animation={{ fade: 0 }}
-                    controller={{
-                      closeOnPullDown: true,
-                      closeOnBackdropClick: true,
-                    }}
-                    zoom={{
-                      scrollToZoom: true,
-                      maxZoomPixelRatio: 10,
-                      wheelZoomDistanceFactor: 200,
-                      pinchZoomDistanceFactor: 200,
-                    }}
-                  />
-                </>
-              ) : (
-                <Skeleton className="h-[350px] w-[500px] rounded-lg" />
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="flex gap-4 justify-start">
-            <Button
-              onClick={() => verifySupplier(supplier.userId, supplier.id)}
-              disabled={supplier.verified || isLoading.status}
-              className="flex-1 hover:bg-rawmats-primary-100 min-w-[100px] max-w-[150px]"
-            >
-              {isLoading.method === "verify" ? (
-                <div className="flex items-center">
-                  <div className="mr-2 h-4 w-4 rounded-full border-2 border-t-transparent border-rawmats-primary-100 animate-spin"></div>
-                  <span>Verifying</span>
-                </div>
-              ) : (
-                <>
-                  <Check className="mr-2 h-4 w-4" />
-                  Verify
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                openRejectModal(supplier.id, supplier.userId);
-              }}
-              variant="destructive"
-              disabled={supplier.verified || isLoading.status}
-              className="flex-1 min-w-[100px] max-w-[150px]"
-            >
-              {isLoading.method === "reject" ? (
-                <div className="flex items-center">
-                  <div className="mr-2 h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
-                  <span>Rejecting</span>
-                </div>
-              ) : (
-                <>
-                  <X className="mr-2 h-4 w-4" />
-                  Reject
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+      <Lightbox
+        open={open}
+        close={toggleOpen(false)}
+        index={index}
+        plugins={[Zoom]}
+        slides={currentDocuments.map((doc) => ({
+          src: doc,
+        }))}
+        on={{ view: updateIndex }}
+        animation={{ fade: 0 }}
+        controller={{
+          closeOnPullDown: true,
+          closeOnBackdropClick: true,
+        }}
+        zoom={{
+          scrollToZoom: true,
+          maxZoomPixelRatio: 10,
+          wheelZoomDistanceFactor: 200,
+          pinchZoomDistanceFactor: 200,
+        }}
+      />
 
       <RejectionDialog
         isModalOpen={isModalOpen}

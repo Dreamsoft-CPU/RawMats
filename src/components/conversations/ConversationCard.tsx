@@ -25,14 +25,24 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
     const conversationId = params.get("conversationId");
 
     if (conversations.length > 0) {
-      if (conversationId) {
-        const conversation = conversations.find((c) => c.id === conversationId);
-        setActiveConversation(conversation || conversations[0]);
+      const currentActive = activeConversation
+        ? conversations.find((c) => c.id === activeConversation.id)
+        : null;
+
+      if (currentActive) {
+        setActiveConversation(currentActive);
+      } else if (conversationId) {
+        const urlConversation = conversations.find(
+          (c) => c.id === conversationId,
+        );
+        setActiveConversation(urlConversation || conversations[0]);
       } else {
         setActiveConversation(conversations[0]);
       }
+    } else {
+      setActiveConversation(null);
     }
-  }, [conversations]);
+  }, [conversations, activeConversation]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -132,9 +142,9 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
   }
 
   return (
-    <Card className="w-full max-w-6xl mx-auto overflow-hidden">
-      <div className="flex h-[600px]">
-        <div className="hidden md:block md:w-1/5">
+    <Card className="w-full max-w-6xl mx-auto overflow-hidden md:h-[calc(100vh-120px)]">
+      <div className="flex h-full">
+        <div className="hidden md:block md:w-1/4 border-r border-border bg-gray-50">
           <ConversationList
             conversations={conversations}
             activeConversationId={activeConversation?.id || null}
@@ -143,7 +153,7 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
           />
         </div>
 
-        <div className="w-full md:w-4/5 flex flex-col">
+        <div className="w-full md:w-3/4 flex flex-col h-full">
           {activeConversation ? (
             <>
               <div className="p-4 border-b border-border bg-card flex items-center">
@@ -154,10 +164,10 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
                   onSelectConversation={setActiveConversation}
                 />
                 <div className="ml-2 md:ml-0">
-                  <h2 className="font-semibold text-xl">
+                  <h2 className="font-semibold text-xl text-gray-800">
                     {getConversationName(activeConversation, userId)}
                   </h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-600">
                     {activeConversation.members.length} participants
                   </p>
                 </div>
@@ -171,8 +181,10 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
               />
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-muted-foreground">Select a conversation</p>
+            <div className="flex-1 flex items-center justify-center bg-gray-100">
+              <p className="text-lg text-muted-foreground/80">
+                Select a conversation to start chatting
+              </p>
             </div>
           )}
         </div>
