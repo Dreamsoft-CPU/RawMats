@@ -13,16 +13,22 @@ import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { ChevronDown, Plus, Search, Trash } from "lucide-react";
+import { ChevronDown, Plus, Trash } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { Product } from "@prisma/client";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { ScrollArea } from "../ui/scroll-area";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover-modified";
 
 interface CreateSalesReportDialogProps {
   products: Product[];
@@ -36,6 +42,7 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const [totalAmount, setTotalAmount] = useState(0);
   const [items, setItems] = useState([
@@ -161,12 +168,6 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
     }
   };
 
-  const getFilteredProducts = (query: string) => {
-    return products.filter((product) =>
-      product.name.toLowerCase().includes(query.toLowerCase()),
-    );
-  };
-
   const getProductById = (productId: string) => {
     return products.find((product) => product.id === productId);
   };
@@ -211,8 +212,8 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label>Product</Label>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                        <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className="w-full justify-between"
@@ -221,42 +222,37 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
                               ? getProductById(item.productId)?.name ||
                                 "Select product..."
                               : "Select product..."}
-                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[280px]">
-                          <div className="flex items-center border-b p-2">
-                            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                            <Input
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[280px] p-0">
+                          <Command>
+                            <CommandInput
                               placeholder="Search products..."
                               value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                              onValueChange={(e) => setSearchQuery(e)}
                             />
-                          </div>
-                          <ScrollArea className="h-[200px]">
-                            {getFilteredProducts(searchQuery).length > 0 ? (
-                              getFilteredProducts(searchQuery).map(
-                                (product) => (
-                                  <DropdownMenuItem
+                            <CommandList>
+                              <CommandEmpty>No products found.</CommandEmpty>
+                              <CommandGroup>
+                                {products.map((product) => (
+                                  <CommandItem
                                     key={product.id}
-                                    onClick={() =>
-                                      handleProductSelect(index, product.id)
-                                    }
+                                    value={product.name}
+                                    onSelect={() => {
+                                      handleProductSelect(index, product.id);
+                                      setPopoverOpen(false);
+                                    }}
                                   >
                                     {product.name} - ₱
                                     {product.price?.toFixed(2)}
-                                  </DropdownMenuItem>
-                                ),
-                              )
-                            ) : (
-                              <div className="text-center p-2 text-sm text-gray-500">
-                                No products found
-                              </div>
-                            )}
-                          </ScrollArea>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor={`quantity-${index}`}>Quantity</Label>
@@ -265,22 +261,31 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
                         type="number"
                         min="1"
                         value={item.quantity}
-                        onChange={(e) =>
-                          handleItemChange(index, "quantity", e.target.value)
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value.length <= 5) {
+                            handleItemChange(index, "quantity", value);
+                          }
+                        }}
                         required
                       />
                     </div>
                     <div className="space-y-1">
                       <Label>Unit Price</Label>
                       <div className="p-2 bg-gray-50 border rounded-md">
-                        ₱{item.productPrice.toFixed(2)}
+                        ₱
+                        {item.productPrice.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                     <div className="space-y-1">
                       <Label>Total</Label>
                       <div className="p-2 bg-gray-50 border rounded-md font-medium">
-                        ₱{item.totalPrice.toFixed(2)}
+                        ₱
+                        {item.totalPrice.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                   </div>
@@ -304,7 +309,10 @@ const CreateSalesReportDialog: React.FC<CreateSalesReportDialogProps> = ({
                 Total Amount
               </Label>
               <div className="text-xl font-bold text-primary-500">
-                ₱{totalAmount.toFixed(2)}
+                ₱
+                {totalAmount.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
               </div>
             </div>
           </div>

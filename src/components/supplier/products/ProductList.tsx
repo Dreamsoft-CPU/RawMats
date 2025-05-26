@@ -33,7 +33,7 @@ const ProductList: React.FC<UserDataProps> = ({ userData }) => {
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="p-2 border rounded-md w-64"
+            className="p-2 border rounded-md max-w-64 min-w-24"
           />
         </div>
       </div>

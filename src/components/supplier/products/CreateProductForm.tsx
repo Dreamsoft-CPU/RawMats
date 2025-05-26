@@ -38,7 +38,7 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
     resolver: zodResolver(ProductFormDataSchema),
     defaultValues: {
       name: "",
-      price: 0,
+      price: undefined,
       description: "",
       supplierId: supplierId,
     },
@@ -105,11 +105,7 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
       <DialogTrigger asChild>
         <Button>Create New Product</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Create New Product</DialogTitle>
-        </DialogHeader>
-
+      <DialogContent className="sm:max-w-[500px] min-w-fit max-h-screen overflow-y-auto">
         {showImageCropper && selectedImage ? (
           <ImageCropper
             image={selectedImage}
@@ -118,120 +114,128 @@ const CreateProductForm = ({ supplierId }: { supplierId: string }) => {
             aspectRatio={4 / 3}
           />
         ) : (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter product name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <>
+            <DialogHeader>
+              <DialogTitle>Create New Product</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter product name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value))
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe the product"
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Image</FormLabel>
-                    <FormControl>
-                      <div className="flex flex-col gap-2">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price</FormLabel>
+                      <FormControl>
                         <Input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          onChange={(e) => {
-                            handleImageSelect(e);
-                          }}
+                          type="number"
+                          placeholder="0.00"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value))
+                          }
                         />
-                        {field.value && (
-                          <div className="mt-2">
-                            <div className="text-sm text-green-600 mb-1">
-                              Image selected
-                            </div>
-                            <div className="relative h-40 w-full border rounded-md overflow-hidden">
-                              <Image
-                                src={URL.createObjectURL(field.value as File)}
-                                alt="Product preview"
-                                fill
-                                className="object-contain"
-                                onLoad={(
-                                  e: React.SyntheticEvent<HTMLImageElement>,
-                                ) => {
-                                  // Clean up the object URL after the image loads
-                                  URL.revokeObjectURL(
-                                    (e.target as HTMLImageElement).src,
-                                  );
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Product"}
-                </Button>
-              </div>
-            </form>
-          </Form>
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe the product"
+                          className="min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Image</FormLabel>
+                      <FormControl>
+                        <div className="flex flex-col gap-2">
+                          <Input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={(e) => {
+                              handleImageSelect(e);
+                            }}
+                          />
+                          {field.value && (
+                            <div className="mt-2">
+                              <div className="text-sm text-green-600 mb-1">
+                                Image selected
+                              </div>
+                              <div className="relative h-40 w-full border rounded-md overflow-hidden">
+                                <Image
+                                  src={URL.createObjectURL(field.value as File)}
+                                  alt="Product preview"
+                                  fill
+                                  className="object-contain"
+                                  onLoad={(
+                                    e: React.SyntheticEvent<HTMLImageElement>,
+                                  ) => {
+                                    // Clean up the object URL after the image loads
+                                    URL.revokeObjectURL(
+                                      (e.target as HTMLImageElement).src,
+                                    );
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Creating..." : "Create Product"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </>
         )}
       </DialogContent>
     </Dialog>

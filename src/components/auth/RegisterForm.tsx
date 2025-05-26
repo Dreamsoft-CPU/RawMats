@@ -18,6 +18,8 @@ import {
 } from "../ui/form";
 import { RegisterFormData, RegisterSchema } from "@/lib/types/register.type";
 import Link from "next/link";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { Check, Eye, EyeOff, X } from "lucide-react";
 
 export function RegisterForm({
   className,
@@ -26,6 +28,26 @@ export function RegisterForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmEmailSent, setConfirmEmailSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const passwordRules = [
+    {
+      label: "At least 8 characters long",
+      test: (pwd: string) => pwd.length >= 8,
+    },
+    {
+      label: "Contains at least one uppercase letter",
+      test: (pwd: string) => /[A-Z]/.test(pwd),
+    },
+    {
+      label: "Contains at least one lowercase letter",
+      test: (pwd: string) => /[a-z]/.test(pwd),
+    },
+    {
+      label: "Contains at least one number",
+      test: (pwd: string) => /\d/.test(pwd),
+    },
+  ];
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(RegisterSchema),
@@ -75,7 +97,7 @@ export function RegisterForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden rounded-2xl backdrop-blur-xl bg-white/70 border border-gray-200 shadow-[0px_6px_16px_rgba(74,144,226,0.4)]">
+      <Card className="overflow-visible rounded-2xl backdrop-blur-xl bg-white/70 border border-gray-200 shadow-[0px_6px_16px_rgba(74,144,226,0.4)]">
         <CardContent className="grid p-0 md:grid-cols-2">
           {confirmEmailSent ? (
             <Fragment>
@@ -141,7 +163,7 @@ export function RegisterForm({
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="AJ Aparicio"
+                                placeholder="Enter your full name"
                                 className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 shadow-md"
                               />
                             </FormControl>
@@ -158,10 +180,13 @@ export function RegisterForm({
                           <FormItem>
                             <FormLabel>Phone Number</FormLabel>
                             <FormControl>
-                              <Input
+                              <PhoneInput
+                                className="bg-white border border-indigo-400 rounded-e-lg rounded-s-lg shadow-md"
+                                placeholder="Enter a phone number"
+                                defaultCountry="PH"
+                                international
+                                countryCallingCodeEditable={false}
                                 {...field}
-                                placeholder="09XXXXXXXXX"
-                                className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 shadow-md"
                               />
                             </FormControl>
                             <FormMessage />
@@ -177,14 +202,57 @@ export function RegisterForm({
                           <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                type="password"
-                                placeholder="*******"
-                                className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 shadow-md"
-                              />
+                              <div className="relative">
+                                <Input
+                                  {...field}
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="*******"
+                                  className="bg-white border border-indigo-400 rounded-2xl px-4 py-2 pr-12 shadow-md"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-5 w-5" />
+                                  ) : (
+                                    <Eye className="h-5 w-5" />
+                                  )}
+                                </button>
+                              </div>
                             </FormControl>
                             <FormMessage />
+
+                            {/* Password Requirements */}
+                            <div className="mt-3 space-y-2">
+                              <p className="text-sm font-medium text-gray-700">
+                                Password requirements:
+                              </p>
+                              <div className="space-y-1">
+                                {passwordRules.map((rule, index) => {
+                                  const isValid =
+                                    field.value && rule.test(field.value);
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="flex items-center space-x-2"
+                                    >
+                                      {isValid ? (
+                                        <Check className="h-4 w-4 text-green-500" />
+                                      ) : (
+                                        <X className="h-4 w-4 text-gray-400" />
+                                      )}
+                                      <span
+                                        className={`text-sm ${isValid ? "text-green-600" : "text-gray-500"}`}
+                                      >
+                                        {rule.label}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           </FormItem>
                         )}
                       />
