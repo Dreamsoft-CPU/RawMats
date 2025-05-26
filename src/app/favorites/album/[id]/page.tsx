@@ -60,7 +60,7 @@ const AlbumPage = async ({ params }: { params: Promise<{ id: string }> }) => {
                 <AlbumProductCard
                   key={favorite.favorite.product.id}
                   data={{
-                    id: favorite.favorite.id,
+                    id: favorite.favorite.product.id,
                     name: favorite.favorite.product.name,
                     image: favorite.favorite.product.image,
                     price: favorite.favorite.product.price,
