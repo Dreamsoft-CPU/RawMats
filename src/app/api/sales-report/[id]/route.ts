@@ -1,11 +1,11 @@
 import prisma from "@/utils/prisma";
 import { createClient } from "@/utils/supabase/server";
-import { salesReportItemSchema } from "@/utils/types/sales-report.type";
+import { CreateSalesReportSchema } from "@/lib/types/salesReport.type";
 import { NextRequest, NextResponse } from "next/server";
 
 export const PUT = async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) => {
   const supabase = await createClient();
   try {
@@ -16,26 +16,18 @@ export const PUT = async (
     }
 
     const { id } = await params;
-
-    const { supplierId, totalAmount, salesReportItems } = await request.json();
-    const validatedData = salesReportItemSchema.array().parse(salesReportItems);
-
-    if (validatedData.length === 0) {
-      return NextResponse.json(
-        { error: true, message: "Sales report items are required" },
-        { status: 400 }
-      );
-    }
+    const requestData = await request.json();
+    const validatedData = CreateSalesReportSchema.parse(requestData);
 
     const updatedSalesReport = await prisma.salesReport.update({
       where: { id },
       data: {
-        supplierId,
-        totalAmount,
+        supplierId: validatedData.supplierId,
+        totalAmount: validatedData.totalAmount,
         SalesReportItem: {
-          deleteMany: {}, // Delete existing items
+          deleteMany: {},
           createMany: {
-            data: validatedData.map((item) => ({
+            data: validatedData.salesReportItems.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
               totalPrice: item.totalPrice,
@@ -55,7 +47,7 @@ export const PUT = async (
 
 export const DELETE = async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) => {
   const supabase = await createClient();
   try {
@@ -73,7 +65,7 @@ export const DELETE = async (
 
     return NextResponse.json(
       { message: "Sales report deleted successfully" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (e) {
     const message =
