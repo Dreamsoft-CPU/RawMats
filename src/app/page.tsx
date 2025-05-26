@@ -1,126 +1,258 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
-import prisma from "@/utils/prisma/client";
-import { ProductWithSupplier } from "@/utils/Products";
-import ProductPreviewCard from "@/components/Products/ProductPreviewCard";
-import NavBar from "@/components/Home/NavBar";
+import HomeSidebar from "@/components/home/HomeSidebar";
+import ProductCard from "@/components/products/ProductCard";
+import HomeInset from "@/components/sidebar/insets/HomeInset";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import prisma from "@/utils/prisma";
+import { getDbUser } from "@/utils/server/getDbUser";
+import { getSidebarData } from "@/utils/server/getSidebarData";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import Link from "next/link";
-import ProductCarousel from "@/components/Products/ProductCarousel";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  getDailyDiscoverProducts,
+  getNewArrivalsProducts,
+  getBrowseCatalogueProducts,
+} from "@/lib/algorithms/products";
+import FeaturedSuppliers, {
+  type FeaturedSupplierData,
+} from "@/components/home/FeaturedSuppliers";
 
-const ITEMS_PER_PAGE = 12;
-
-export default async function Home({
+const HomePage = async ({
   searchParams,
 }: {
-  searchParams: { page: string };
-}) {
+  searchParams: { search?: string; page?: string };
+}) => {
+  const sidebarData = await getSidebarData();
+  const user = await getDbUser();
+
+  if ("error" in user) {
+    throw new Error(user.message || "User not found");
+  }
+  const userId = user.id;
+
+  const searchQuery = searchParams.search || "";
   const page = Number(searchParams.page) || 1;
-  const supabase = createClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const productsPerPage = 12;
 
-  if (userError || !userData?.user) {
-    redirect("/login");
-  }
+  // Fetch products using new algorithms
+  const dailyDiscoverProducts = await getDailyDiscoverProducts(userId);
+  const newArrivalsProducts = await getNewArrivalsProducts(userId);
+  const { products: browseCatalogueProducts, totalPages } =
+    await getBrowseCatalogueProducts(
+      searchQuery,
+      page,
+      productsPerPage,
+      userId,
+    );
 
-  const user = await prisma.user.findUnique({
-    where: { id: userData.user.id },
-  });
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const supplier = await prisma.supplier.findUnique({
-    where: { userId: user.id, verified: true },
-  });
-
-  const allProducts: ProductWithSupplier[] = await prisma.product.findMany({
-    include: { supplier: true },
+  // Fetch featured suppliers data
+  const allSuppliers = await prisma.supplier.findMany({
     where: { verified: true },
-    orderBy: { dateAdded: "desc" },
+    include: {
+      _count: {
+        select: { Product: { where: { verified: true } } },
+      },
+      Product: {
+        where: { verified: true },
+        select: {
+          ratings: {
+            select: { rating: true },
+          },
+        },
+      },
+    },
   });
 
-  const dailyDiscoverProducts = allProducts.slice(0, 8);
-  const newArrivalsProducts = allProducts.slice(0, 4);
-  const paginatedProducts = allProducts.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE,
+  const shuffledSuppliers = allSuppliers.sort(() => 0.5 - Math.random());
+  const selectedSuppliers = shuffledSuppliers.slice(0, 5);
+
+  const featuredSuppliers: FeaturedSupplierData[] = selectedSuppliers.map(
+    (s) => {
+      let totalRatingSum = 0;
+      let totalRatingsCount = 0;
+      s.Product.forEach((product) => {
+        product.ratings.forEach((rating) => {
+          totalRatingSum += rating.rating;
+          totalRatingsCount++;
+        });
+      });
+      const averageRating =
+        totalRatingsCount > 0 ? totalRatingSum / totalRatingsCount : 0;
+      return {
+        id: s.id,
+        businessName: s.businessName,
+        businessPicture: s.businessPicture,
+        productCount: s._count.Product,
+        averageRating: averageRating,
+        totalReviews: totalRatingsCount,
+      };
+    },
   );
-  const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rawmats-background-700 to-rawmats-secondary-100">
-      <NavBar user={user} supplier={supplier} />
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-rawmats-primary-700 mb-6">
-            Daily Discover
-          </h2>
-          <ProductCarousel userId={user.id} products={dailyDiscoverProducts} />
-        </section>
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-rawmats-primary-700 mb-6">
-            New Arrivals
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {newArrivalsProducts.map((product) => (
-              <ProductPreviewCard
-                key={product.id}
-                userId={user.id}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                supplier={product.supplier}
-                image={product.image}
-              />
-            ))}
+    <div className="flex h-screen w-full">
+      <HomeSidebar data={sidebarData} />
+      <HomeInset userData={user}>
+        <div className="flex flex-col w-full p-4">
+          {!searchQuery && (
+            <>
+              {/* Daily Discover Section */}
+              <div className="flex flex-col mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl md:text-3xl font-bold text-blue-950">
+                    Daily Discover
+                  </h2>
+                </div>
+                <div className="justify-center items-center grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {dailyDiscoverProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      data={{
+                        id: product.id,
+                        name: product.name,
+                        image: product.image,
+                        price: product.price,
+                        userId: userId,
+                        favorite: product.favorites,
+                        supplier: product.supplier,
+                        averageRating: product.averageRating,
+                        totalReviews: product.totalReviews,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Featured Suppliers Section */}
+              <FeaturedSuppliers suppliers={featuredSuppliers} />
+
+              {/* New Arrivals Section */}
+              <div className="mb-8">
+                <h2 className="text-xl md:text-3xl text-blue-950 font-bold mb-4">
+                  New Arrivals
+                </h2>
+                <div className="relative">
+                  <div className="flex pb-4 gap-4 items-center justify-center">
+                    <ScrollArea className="w-full max-w-[calc(100vw-2rem)] md:max-w-[calc(100vw-4rem)] lg:max-w-[calc(100vw-8rem)] overflow-hidden items-center">
+                      <div className="flex space-x-4">
+                        {newArrivalsProducts.map((product) => (
+                          <div
+                            key={product.id}
+                            className="w-[250px] flex-shrink-0"
+                          >
+                            <ProductCard
+                              data={{
+                                id: product.id,
+                                name: product.name,
+                                image: product.image,
+                                price: product.price,
+                                userId: userId,
+                                favorite: product.favorites,
+                                supplier: product.supplier,
+                                averageRating: product.averageRating,
+                                totalReviews: product.totalReviews,
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Browse Catalogue or Search Results Section */}
+          <div className="flex flex-col min-h-[calc(100vh-200px)]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl md:text-3xl font-bold text-blue-950">
+                {searchQuery
+                  ? `Search Results for "${searchQuery}"`
+                  : "Browse Catalogue"}
+              </h2>
+            </div>
+            {browseCatalogueProducts.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {browseCatalogueProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      data={{
+                        id: product.id,
+                        name: product.name,
+                        image: product.image,
+                        price: product.price,
+                        userId: userId,
+                        favorite: product.favorites,
+                        supplier: product.supplier,
+                        averageRating: product.averageRating,
+                        totalReviews: product.totalReviews,
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="mt-8 flex justify-center">
+                  <nav className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page <= 1}
+                      asChild
+                      className="h-8 px-3"
+                    >
+                      <Link
+                        href={`/?page=${Math.max(1, page - 1)}${searchQuery ? `&search=${searchQuery}` : ""}`}
+                      >
+                        <ChevronLeft className="w-4 h-4 mr-2" />
+                        Previous
+                      </Link>
+                    </Button>
+
+                    <span className="text-primary font-medium px-3">
+                      Page {page} of {totalPages || 1}
+                    </span>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      asChild
+                      className="h-8 px-3"
+                    >
+                      <Link
+                        href={`/?page=${Math.min(totalPages, page + 1)}${searchQuery ? `&search=${searchQuery}` : ""}`}
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                      </Link>
+                    </Button>
+                  </nav>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center py-12">
+                <div className="text-center space-y-4">
+                  <h3 className="text-2xl font-semibold text-gray-900">
+                    No results found
+                  </h3>
+                  <p className="text-gray-500 max-w-md">
+                    We couldn&apos;t find any products matching &quot;
+                    {searchQuery}&quot;. Try adjusting your search or browse our
+                    catalogue.
+                  </p>
+                  <Button variant="outline" asChild className="mt-4">
+                    <Link href="/">Browse All Products</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-        </section>
-        <section>
-          <h2 className="text-2xl font-bold text-rawmats-primary-700 mb-6">
-            Browse All
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {paginatedProducts.map((product) => (
-              <ProductPreviewCard
-                key={product.id}
-                userId={user.id}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                supplier={product.supplier}
-                image={product.image}
-              />
-            ))}
-          </div>
-          <div className="flex justify-center items-center gap-4">
-            <Button variant="outline" disabled={page <= 1} asChild>
-              <Link href={`/?page=${Math.max(1, page - 1)}`}>
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Previous
-              </Link>
-            </Button>
-            <span className="text-rawmats-text-700">
-              Page {page} of {totalPages}
-            </span>
-            <Button variant="outline" disabled={page >= totalPages} asChild>
-              <Link href={`/?page=${Math.min(totalPages, page + 1)}`}>
-                Next
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </div>
-        </section>
-      </main>
-      <footer className="bg-rawmats-primary-900 text-rawmats-secondary-100 py-6 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm">
-            &copy; 2023 RawMats. All rights reserved.
-          </p>
         </div>
-      </footer>
+      </HomeInset>
     </div>
   );
-}
+};
+
+export default HomePage;

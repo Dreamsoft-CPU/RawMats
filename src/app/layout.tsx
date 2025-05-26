@@ -1,22 +1,32 @@
-import { Inter } from "next/font/google";
+import { Roboto } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "sonner";
 
-const inter = Inter({ subsets: ["latin"] });
+const roboto = Roboto({
+  weight: ["300", "400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "RawMats",
-  description: "Browse and buy raw materials for your business",
+  description: "Raw Materials Management Application",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>{children}</body>
+      <body className={`${roboto.className} w-full h-screen`}>
+        <SidebarProvider>{children}</SidebarProvider>
+        <Toaster />
+      </body>
     </html>
   );
 }
