@@ -3,10 +3,11 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
-import { Star } from "lucide-react";
+import { Star, ArrowLeft } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
 
 interface Rating {
   id: string;
@@ -42,14 +43,14 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
 }) => {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string | number>(
-    "All Stars"
+    "All Stars",
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ratings, setRatings] = useState<Rating[]>(initialRatings);
   const [avgRating, setAvgRating] = useState<number>(averageRating);
   const [reviewCount, setReviewCount] = useState<number>(totalReviews);
   const [userRating, setUserRating] = useState<Rating | null>(
-    initialRatings.find((r) => r.userId === currentUserId) || null
+    initialRatings.find((r) => r.userId === currentUserId) || null,
   );
 
   useEffect(() => {
@@ -63,7 +64,7 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
         setAvgRating(data.averageRating);
         setReviewCount(data.totalReviews);
         setUserRating(
-          data.ratings.find((r: Rating) => r.userId === currentUserId) || null
+          data.ratings.find((r: Rating) => r.userId === currentUserId) || null,
         );
       } catch (error) {
         console.error("Error fetching ratings:", error);
@@ -164,8 +165,20 @@ const RatingsInfo: React.FC<RatingsInfoProps> = ({
 
   return (
     <div className="p-4 md:p-6">
+      {/* Back button */}
+      <div className="mb-4">
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/product/${productId}`)}
+          className="flex items-center gap-2 text-mobile-sm hover:bg-gray-50"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Product
+        </Button>
+      </div>
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
+        <h1 className="text-mobile-xl font-bold text-gray-800">
           Reviews for {productName}
         </h1>
         <div className="flex flex-col md:flex-row md:items-center gap-4">
