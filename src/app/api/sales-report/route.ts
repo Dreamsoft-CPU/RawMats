@@ -1,6 +1,6 @@
 import prisma from "@/utils/prisma";
 import { createClient } from "@/utils/supabase/server";
-import { salesReportItemSchema } from "@/utils/types/sales-report.type";
+import { CreateSalesReportSchema } from "@/lib/types/salesReport.type";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (req: NextRequest) => {
@@ -12,23 +12,16 @@ export const POST = async (req: NextRequest) => {
       throw new Error("User does not exist!");
     }
 
-    const { supplierId, totalAmount, salesReportItems } = await req.json();
-    const validatedData = salesReportItemSchema.array().parse(salesReportItems);
-
-    if (validatedData.length === 0) {
-      return NextResponse.json(
-        { error: true, message: "Sales report items are required" },
-        { status: 400 }
-      );
-    }
+    const requestData = await req.json();
+    const validatedData = CreateSalesReportSchema.parse(requestData);
 
     const newSalesReport = await prisma.salesReport.create({
       data: {
-        supplierId,
-        totalAmount,
+        supplierId: validatedData.supplierId,
+        totalAmount: validatedData.totalAmount,
         SalesReportItem: {
           createMany: {
-            data: validatedData.map((item) => ({
+            data: validatedData.salesReportItems.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
               totalPrice: item.totalPrice,
@@ -40,7 +33,7 @@ export const POST = async (req: NextRequest) => {
 
     return NextResponse.json(newSalesReport, { status: 201 });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "An error occured";
+    const message = e instanceof Error ? e.message : "An error occurred";
     console.log("Error creating sales report:", message);
     return NextResponse.json({ error: true, message }, { status: 400 });
   }
