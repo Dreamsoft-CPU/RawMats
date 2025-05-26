@@ -99,7 +99,7 @@ const HomePage = async ({
               {/* Daily Discover Section */}
               <div className="flex flex-col mb-8">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl md:text-3xl font-bold text-primary">
+                  <h2 className="text-xl md:text-3xl font-bold text-blue-950">
                     Daily Discover
                   </h2>
                 </div>
@@ -128,7 +128,7 @@ const HomePage = async ({
 
               {/* New Arrivals Section */}
               <div className="mb-8">
-                <h2 className="text-xl md:text-3xl text-primary font-bold mb-4">
+                <h2 className="text-xl md:text-3xl text-blue-950 font-bold mb-4">
                   New Arrivals
                 </h2>
                 <div className="relative">
@@ -167,7 +167,7 @@ const HomePage = async ({
           {/* Browse Catalogue or Search Results Section */}
           <div className="flex flex-col min-h-[calc(100vh-200px)]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl md:text-3xl font-bold text-primary">
+              <h2 className="text-xl md:text-3xl font-bold text-blue-950">
                 {searchQuery
                   ? `Search Results for "${searchQuery}"`
                   : "Browse Catalogue"}
