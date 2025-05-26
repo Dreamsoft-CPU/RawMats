@@ -25,7 +25,7 @@ const FeaturedSuppliers: React.FC<FeaturedSuppliersProps> = ({ suppliers }) => {
 
   return (
     <div className="mb-8">
-      <h2 className="text-xl md:text-3xl text-primary font-bold mb-4">
+      <h2 className="text-xl md:text-3xl text-blue-950 font-bold mb-4">
         Featured Suppliers
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

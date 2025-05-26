@@ -14,8 +14,7 @@ import Link from "next/link";
 const ProductPageCard = ({ data }: ProductCardProps) => {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(
-    data.favorites?.some((favorite) => favorite.userId === data.userId) ||
-      false,
+    data.favorites?.some((favorite) => favorite.userId === data.userId) || false
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,6 +23,30 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
   const totalReviews = data.totalReviews || 0;
   const hasRatings = totalReviews > 0;
   const averageRating = data.averageRating || 0;
+  const [userRating, setUserRating] = useState(data.userRating); // if you pass this in props
+
+  const handleDeleteRating = async () => {
+    if (!confirm("Are you sure you want to delete your rating?")) return;
+
+    try {
+      const response = await fetch("/api/ratings", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId: data.id }),
+      });
+
+      if (!response.ok) throw new Error("Failed to delete rating");
+
+      toast.success("Rating deleted successfully");
+      setUserRating(null); // update local state
+      router.refresh(); // refresh the page to reflect changes
+    } catch (error) {
+      console.error("Error deleting rating:", error);
+      toast.error("Failed to delete rating");
+    }
+  };
 
   const createConversation = async () => {
     try {
@@ -106,14 +129,26 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-6xl mx-auto my-4 md:my-8">
-      <div className="grid md:grid-cols-2 grid-cols-1 gap-4 md:gap-8">
-        <div className="relative aspect-square w-full">
+    <div
+      className="
+      bg-white rounded-xl 
+      w-full max-w-4xl
+      mx-auto my-20
+      overflow-hidden
+      border border-gray-100
+      shadow-[0_4px_15px_rgba(0,0,0,0.1),0_2px_10px_rgba(0,0,0,0.06)]
+      transition-shadow duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12),0_4px_20px_rgba(0,0,0,0.08)]
+      min-h-[420px]
+      flex flex-col
+    "
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 w-full h-full">
+        <div className="relative w-full h-full">
           <Image
             src={data.image || "/placeholder.svg"}
             alt={data.name}
             fill
-            className="object-cover"
+            className="object-cover rounded-lg"
             priority
           />
         </div>
@@ -171,8 +206,8 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
             </button>
           </div>
 
-          <div className="mt-3 md:mt-4">
-            <span className="text-2xl md:text-3xl font-bold text-indigo-600">
+          <div>
+            <span className="inline-block text-sm font-semibold text-black bg-blue-100 rounded-full px-3 py-1 mt-4">
               ₱{data.price.toFixed(2)}
             </span>
           </div>
@@ -218,13 +253,13 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
             </p>
           </div>
 
-          <div className="mt-auto pt-4 md:pt-6">
+          <div className="flex">
             <button
               onClick={() => {
                 createConversation();
               }}
               disabled={isCreatingConversation}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-auto mt-6 border border-indigo-300 hover:bg-indigo-100 text-black px-3 md:px-3 py-1.5 md:py-2 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCreatingConversation ? "Creating..." : "Contact Supplier"}
             </button>
@@ -232,6 +267,7 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
         </div>
       </div>
 
+      {/* Ratings section BELOW product info, still inside main container */}
       {data.ratings && data.ratings.length > 0 && (
         <div className="p-4 md:p-6 border-t border-gray-200">
           <div className="flex justify-between items-center mb-4">
@@ -246,30 +282,42 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
             </Link>
           </div>
           <div className="space-y-4">
-            {data.ratings.map((rating) => (
+            {data.ratings.slice(0, 2).map((rating) => (
               <div
                 key={rating.id}
                 className="border-b border-gray-200 pb-4 last:border-b-0"
               >
-                <div className="flex items-center mb-2">
-                  <Avatar className="h-8 w-8 mr-2">
-                    <AvatarImage
-                      src={rating.user.profilePicture}
-                      alt={rating.user.displayName}
-                    />
-                    <AvatarFallback>
-                      {rating.user.displayName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-sm">
-                      {rating.user.displayName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatDate(rating.createdAt)}
-                    </p>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage
+                        src={rating.user.profilePicture}
+                        alt={rating.user.displayName}
+                      />
+                      <AvatarFallback>
+                        {rating.user.displayName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium text-sm">
+                        {rating.user.displayName}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatDate(rating.createdAt)}
+                      </p>
+                    </div>
                   </div>
+                  {/* Show delete icon only for the current user's rating */}
+                  {userRating && userRating.id === rating.id && (
+                    <button
+                      onClick={handleDeleteRating}
+                      className="text-xs border border-red-500 text-red-500 px-2 py-0.5 rounded-md hover:bg-red-50 transition"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
+
                 <div className="flex mb-1">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -291,6 +339,7 @@ const ProductPageCard = ({ data }: ProductCardProps) => {
         </div>
       )}
 
+      {/* Modal */}
       <FeedbackModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

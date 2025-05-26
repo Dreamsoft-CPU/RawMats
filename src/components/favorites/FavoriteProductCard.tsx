@@ -36,8 +36,8 @@ const FavoriteProductCard = ({
 
   return (
     <>
-      <Card className="max-w-52 hover:border-primary transition-transform duration-200 hover:scale-105 overflow-hidden">
-        <div className="-mx-6 -mt-6 aspect-square overflow-hidden">
+      <Card className="w-full max-w-52 h-[360px] border border-blue-950 hover:border-primary transition-transform duration-200 hover:scale-105 overflow-hidden">
+        <div className="w-full h-52 overflow-hidden">
           <Link href={`/product/${id}`}>
             {image ? (
               <Image
@@ -45,7 +45,7 @@ const FavoriteProductCard = ({
                 alt={name}
                 width={500}
                 height={500}
-                className="rounded-t-xl object-cover w-full h-full"
+                className="rounded-t-xl object-cover object-center w-full h-full"
               />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center rounded-t-xl">
@@ -70,10 +70,10 @@ const FavoriteProductCard = ({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground truncate whitespace-nowrap overflow-hidden">
             {supplier || "RawMats Supplier"}
           </p>
-          <p className="text-primary font-bold text-lg mt-1">
+          <p className="inline-block text-sm font-semibold text-black bg-blue-100 rounded-full px-3 py-1 mt-4">
             ₱{price.toFixed(2)}
           </p>
         </div>

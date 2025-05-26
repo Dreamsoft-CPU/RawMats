@@ -55,7 +55,7 @@ const AlbumPage = async ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           {album.AlbumFavorite.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="justify-center items-center grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {album.AlbumFavorite.map((favorite) => (
                 <AlbumProductCard
                   key={favorite.favorite.product.id}

@@ -1,8 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import { StarFilledIcon, DotsVerticalIcon } from "@radix-ui/react-icons";
+import { DotsVerticalIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
+
+
 
 import { toast } from "sonner";
 
@@ -10,7 +12,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -81,19 +82,22 @@ const AlbumProductCard: React.FC<AlbumProductCardProps> = ({
   return (
     <Card
       onClick={() => router.push(`/product/${id}`)}
-      className="max-w-52 hover:border-primary transition-transform duration-200 hover:scale-105"
+      className="w-full max-w-52 h-[360px] hover:border-primary transition-transform duration-200 hover:scale-105"
     >
-      <CardHeader>
-        <div className="-mx-6 -mt-6 aspect-square">
+      <CardHeader className="p-0">
+        <div className="w-full h-52 overflow-hidden rounded-t-xl relative">
           <Image
-            src={image}
+            src={image || "/placeholder.svg"}
             alt="Product"
-            width={500}
-            height={500}
-            className="rounded-t-xl object-cover w-full h-full"
+            fill
+            className="object-cover object-center w-full h-full"
+            sizes="100%"
           />
         </div>
-        <CardTitle className="truncate flex flex-row justify-between text-lg -mx-4 items-center ">
+      </CardHeader>
+
+      <CardHeader className="px-4 pt-2">
+        <CardTitle className="truncate flex justify-between items-center text-lg">
           {name}
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -139,19 +143,16 @@ const AlbumProductCard: React.FC<AlbumProductCardProps> = ({
             </AlertDialog>
           </DropdownMenu>
         </CardTitle>
-        <CardDescription className="-mx-4">
+        <CardDescription>
           {supplier.businessName || "RawMats Supplier"}
         </CardDescription>
       </CardHeader>
-      <CardContent className="-mt-4 -mx-4">
-        <p className="text-primary font-bold text-lg">₱{price.toFixed(2)}</p>
-      </CardContent>
-      <CardFooter className="-mx-4">
-        <p className="flex flex-row items-center gap-1">
-          <StarFilledIcon className="text-yellow-300" />
-          5.0
+
+      <CardContent>
+        <p className="inline-block text-sm font-semibold text-black bg-blue-100 rounded-full px-3 py-1">
+          ₱{price.toFixed(2)}
         </p>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 };
