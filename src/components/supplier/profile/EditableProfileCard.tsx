@@ -46,8 +46,8 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
   const [phone, setPhone] = useState(supplier?.businessPhone || "");
   const [isBioModalOpen, setIsBioModalOpen] = useState(false);
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
-  const [showCropper, setShowCropper] = useState(false);
-  const [cropImage, setCropImage] = useState<string | null>(null);
+  const [showImageCropper, setShowImageCropper] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -68,22 +68,21 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target && typeof e.target.result === "string") {
-          setCropImage(e.target.result);
-          setShowCropper(true);
-        }
-      };
-      reader.readAsDataURL(file);
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImage(imageUrl);
+      setShowImageCropper(true);
     }
   };
 
-  const handleCropComplete = async (croppedImage: Blob) => {
+  const handleCropComplete = async (croppedBlob: Blob) => {
     try {
-      setShowCropper(false);
+      setShowImageCropper(false);
       setLoading(true);
       setError(null);
 
@@ -91,7 +90,7 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
       const formData = new FormData();
       formData.append(
         "businessPicture",
-        new File([croppedImage], "profile.jpg", { type: "image/jpeg" }),
+        new File([croppedBlob], "profile.jpg", { type: "image/jpeg" }),
       );
 
       // Send the image directly to the supplier API endpoint
@@ -107,6 +106,12 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
 
       toast.success("Profile image updated successfully");
       router.refresh();
+
+      // Clean up selected image
+      if (selectedImage) {
+        URL.revokeObjectURL(selectedImage);
+        setSelectedImage(null);
+      }
     } catch (error) {
       console.error("Error processing image:", error);
       setError(
@@ -117,6 +122,14 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
       toast.error("Failed to update profile image");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCropCancel = () => {
+    setShowImageCropper(false);
+    if (selectedImage) {
+      URL.revokeObjectURL(selectedImage);
+      setSelectedImage(null);
     }
   };
 
@@ -391,18 +404,14 @@ const EditableProfileCard: React.FC<UserDataProps> = ({ userData }) => {
       </Dialog>
 
       {/* Image Cropper */}
-      {showCropper && cropImage && (
-        <Dialog open={showCropper} onOpenChange={setShowCropper}>
-          <DialogContent className="p-0 bg-transparent border-none shadow-none min-w-fit">
-            <ImageCropper
-              image={cropImage as string}
-              onCropComplete={handleCropComplete}
-              onCancel={() => setShowCropper(false)}
-              aspectRatio={1} // 1:1 aspect ratio for profile pictures
-              cropShape="round"
-            />
-          </DialogContent>
-        </Dialog>
+      {showImageCropper && selectedImage && (
+        <ImageCropper
+          image={selectedImage}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          aspectRatio={1} // 1:1 aspect ratio for profile pictures
+          cropShape="round"
+        />
       )}
     </div>
   );
