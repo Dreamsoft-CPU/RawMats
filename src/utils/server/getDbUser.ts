@@ -25,6 +25,7 @@ export const getDbUser = async () => {
             Product: {
               include: {
                 favorites: true,
+                ratings: true,
               },
             },
           },
