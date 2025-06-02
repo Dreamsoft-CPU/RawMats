@@ -199,9 +199,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ onConfirmLocation }) => {
             className="h-full w-full"
           >
             <TileLayer
-              attribution='&copy; <a href="https://locationiq.com">LocationIQ</a>'
-              url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key={accessToken}"
-              accessToken={process.env.NEXT_PUBLIC_LOCATIONIQ_API_KEY || ""}
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <LocationMarker onLocationSelect={handleLocationSelect} />
             {position && <Marker position={position} icon={customIcon} />}
@@ -236,6 +235,15 @@ const MapComponent: React.FC<MapComponentProps> = ({ onConfirmLocation }) => {
         )}
         <div className="text-sm text-gray-500 text-center">
           Map data &copy;{" "}
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            className="text-blue-500 hover:text-blue-700"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            OpenStreetMap
+          </a>{" "}
+          contributors. Geocoding by{" "}
           <a
             href="https://locationiq.com"
             className="text-blue-500 hover:text-blue-700"

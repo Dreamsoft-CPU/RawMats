@@ -2,6 +2,7 @@
 
 import { SidebarNavItems } from "@/lib/types/sidebarData.type";
 import {
+  BookOpen,
   Heart,
   HelpCircle,
   Home,
@@ -39,6 +40,11 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({
       title: "Conversations",
       url: "/conversations",
       icon: Mail,
+    },
+    {
+      title: "Instructions",
+      url: "/instructions",
+      icon: BookOpen,
     },
     {
       title: "Help Center",
